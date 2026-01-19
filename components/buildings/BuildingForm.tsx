@@ -81,21 +81,26 @@ export default function BuildingForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">
-          {building ? 'Edit Building' : 'Create Building'}
-        </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="card w-full max-w-md p-6">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">
+            {building ? 'Edit Building' : 'Create Building'}
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {building ? 'Update building information' : 'Add a new building'}
+          </p>
+        </div>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-3">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               District *
             </label>
             <select
@@ -103,7 +108,7 @@ export default function BuildingForm({
               onChange={(e) => setDistrictId(parseInt(e.target.value))}
               required
               disabled={!!building}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 disabled:bg-gray-100"
+              className="input-field disabled:bg-gray-100"
             >
               {districts.map((district) => (
                 <option key={district.id} value={district.id}>
@@ -113,8 +118,8 @@ export default function BuildingForm({
             </select>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Name *
             </label>
             <input
@@ -122,12 +127,13 @@ export default function BuildingForm({
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+              className="input-field"
+              placeholder="Building 1"
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
               Slug *
             </label>
             <input
@@ -136,7 +142,7 @@ export default function BuildingForm({
               onChange={(e) => setSlug(e.target.value)}
               required
               pattern="[a-z0-9-]+"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+              className="input-field"
               placeholder="tower-1"
             />
             <p className="mt-1 text-xs text-gray-500">
@@ -144,18 +150,18 @@ export default function BuildingForm({
             </p>
           </div>
 
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+              className="btn-primary"
             >
               {loading ? 'Saving...' : building ? 'Save' : 'Create'}
             </button>

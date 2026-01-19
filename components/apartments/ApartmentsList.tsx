@@ -43,7 +43,7 @@ export default function ApartmentsList() {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1); // Сбрасываем на первую страницу при изменении фильтров
+    setCurrentPage(1);
     fetchApartments(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBuilding, selectedStatus]);
@@ -122,15 +122,15 @@ export default function ApartmentsList() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'upcoming':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'available':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-50 text-green-700 border-green-200';
       case 'reserved':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'sold':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
@@ -150,65 +150,83 @@ export default function ApartmentsList() {
   };
 
   if (loading && apartments.length === 0) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="text-sm text-gray-600">Loading apartments...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
+      {/* Header */}
+      <div className="mb-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Apartments</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Manage and view all apartments
+            </p>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="btn-primary"
+            >
+              + Create Apartment
+            </button>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="card flex flex-wrap items-end gap-4 p-4">
+          <div className="flex-1 min-w-[200px]">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Building
+            </label>
+            <select
+              value={selectedBuilding || ''}
+              onChange={(e) =>
+                setSelectedBuilding(e.target.value ? parseInt(e.target.value) : null)
+              }
+              className="input-field"
+            >
+              <option value="">All Buildings</option>
+              {buildings.map((building) => (
+                <option key={building.id} value={building.id}>
+                  {building.district.name} - {building.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Status
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="input-field"
+            >
+              <option value="">All Statuses</option>
+              <option value="UPCOMING">Upcoming</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="SOLD">Sold</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
-
-      <div className="mb-4 flex items-center justify-between">
-        {isAdmin && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            + Create Apartment
-          </button>
-        )}
-        <div className="flex items-center space-x-4">
-        <div>
-          <label className="text-sm font-medium text-gray-700">
-            Filter by Building:
-          </label>
-          <select
-            value={selectedBuilding || ''}
-            onChange={(e) =>
-              setSelectedBuilding(e.target.value ? parseInt(e.target.value) : null)
-            }
-            className="ml-2 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          >
-            <option value="">All Buildings</option>
-            {buildings.map((building) => (
-              <option key={building.id} value={building.id}>
-                {building.district.name} - {building.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">
-            Filter by Status:
-          </label>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="ml-2 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="UPCOMING">Upcoming</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="RESERVED">Reserved</option>
-            <option value="SOLD">Sold</option>
-          </select>
-        </div>
-        </div>
-      </div>
 
       {showForm && (
         <ApartmentForm
@@ -221,151 +239,129 @@ export default function ApartmentsList() {
         />
       )}
 
+      {/* Stats */}
       <div className="mb-4 text-sm text-gray-600">
-        Showing {apartments.length} of {pagination.total} apartments
-        {pagination.total_pages > 1 && (
-          <span> (Page {pagination.page} of {pagination.total_pages})</span>
-        )}
+        Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+        {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+        {pagination.total} apartments
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                No
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Building
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Area (m²)
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Price
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Paid
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Balance
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {apartments.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                  No apartments. Create the first apartment.
-                </td>
-              </tr>
-            ) : (
-              apartments.map((apt) => (
-                <tr key={apt.id}>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+      {/* Cards Grid */}
+      {apartments.length === 0 ? (
+        <div className="card p-12 text-center">
+          <p className="text-gray-500">No apartments found. Create the first apartment.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {apartments.map((apt) => (
+            <div key={apt.id} className="card card-hover p-5">
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
                     {apt.apartmentNo}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
                     {apt.building.district.name} - {apt.building.name}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4">
-                    <select
-                      value={apt.status}
-                      onChange={(e) => handleStatusChange(apt.id, e.target.value)}
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(apt.status)} border-0 focus:ring-2 focus:ring-blue-500`}
-                    >
-                      <option value="UPCOMING">Upcoming</option>
-                      <option value="AVAILABLE">Available</option>
-                      <option value="RESERVED">Reserved</option>
-                      <option value="SOLD">Sold</option>
-                    </select>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                  </p>
+                </div>
+                <select
+                  value={apt.status}
+                  onChange={(e) => handleStatusChange(apt.id, e.target.value)}
+                  className={`badge border ${getStatusColor(apt.status)} cursor-pointer text-xs`}
+                >
+                  <option value="UPCOMING">Upcoming</option>
+                  <option value="AVAILABLE">Available</option>
+                  <option value="RESERVED">Reserved</option>
+                  <option value="SOLD">Sold</option>
+                </select>
+              </div>
+
+              <div className="space-y-3 border-t border-gray-100 pt-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Area</span>
+                  <span className="font-medium text-gray-900">
                     {apt.sqm ? `${apt.sqm} m²` : '-'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Price</span>
+                  <span className="font-semibold text-gray-900">
                     {apt.total_price
                       ? `${(apt.total_price / 1000000).toFixed(1)}M AMD`
                       : '-'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Paid</span>
+                  <span className="font-medium text-gray-900">
                     {apt.total_paid
                       ? `${(apt.total_paid / 1000000).toFixed(1)}M AMD`
                       : '-'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Balance</span>
+                  <span className="font-medium text-gray-900">
                     {apt.balance
                       ? `${(apt.balance / 1000000).toFixed(1)}M AMD`
                       : '-'}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                    <Link
-                      href={`/apartments/${apt.id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Open
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </span>
+                </div>
+              </div>
 
-      {/* Pagination with page numbers */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Link
+                  href={`/apartments/${apt.id}`}
+                  className="block w-full rounded-lg bg-gray-50 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                >
+                  View Details
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
       {pagination.total_pages > 1 && (
-        <div className="mt-4 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-            {pagination.total} apartments
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Page {pagination.page} of {pagination.total_pages}
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
 
-            {/* Page numbers */}
             <div className="flex space-x-1">
               {(() => {
                 const pages = [];
                 const totalPages = pagination.total_pages;
                 const current = pagination.page;
                 
-                // Показываем максимум 7 страниц вокруг текущей
                 let startPage = Math.max(1, current - 3);
                 let endPage = Math.min(totalPages, current + 3);
                 
-                // Если в начале, показываем первые страницы
                 if (current <= 4) {
                   startPage = 1;
                   endPage = Math.min(7, totalPages);
                 }
                 
-                // Если в конце, показываем последние страницы
                 if (current >= totalPages - 3) {
                   startPage = Math.max(1, totalPages - 6);
                   endPage = totalPages;
                 }
                 
-                // Первая страница
                 if (startPage > 1) {
                   pages.push(
                     <button
                       key={1}
                       onClick={() => setCurrentPage(1)}
-                      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="btn-secondary"
                     >
                       1
                     </button>
@@ -379,16 +375,15 @@ export default function ApartmentsList() {
                   }
                 }
                 
-                // Страницы вокруг текущей
                 for (let i = startPage; i <= endPage; i++) {
                   pages.push(
                     <button
                       key={i}
                       onClick={() => setCurrentPage(i)}
-                      className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                      className={`${
                         i === current
-                          ? 'border-blue-500 bg-blue-50 text-blue-600'
-                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'btn-secondary'
                       }`}
                     >
                       {i}
@@ -396,7 +391,6 @@ export default function ApartmentsList() {
                   );
                 }
                 
-                // Последняя страница
                 if (endPage < totalPages) {
                   if (endPage < totalPages - 1) {
                     pages.push(
@@ -409,7 +403,7 @@ export default function ApartmentsList() {
                     <button
                       key={totalPages}
                       onClick={() => setCurrentPage(totalPages)}
-                      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="btn-secondary"
                     >
                       {totalPages}
                     </button>
@@ -423,7 +417,7 @@ export default function ApartmentsList() {
             <button
               onClick={() => setCurrentPage(Math.min(pagination.total_pages, currentPage + 1))}
               disabled={currentPage === pagination.total_pages}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>

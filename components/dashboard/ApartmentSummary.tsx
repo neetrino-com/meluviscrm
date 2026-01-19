@@ -21,7 +21,7 @@ export default function ApartmentSummary() {
   const fetchSummary = async () => {
     try {
       const response = await fetch('/api/dashboard/summary');
-      if (!response.ok) throw new Error('Ошибка загрузки');
+      if (!response.ok) throw new Error('Failed to load');
       const summary = await response.json();
       setData(summary);
     } catch (err) {
@@ -33,9 +33,11 @@ export default function ApartmentSummary() {
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">Apartment Summary</h2>
-        <div className="text-center py-4">Загрузка...</div>
+      <div className="card p-6">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Apartment Summary</h2>
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+        </div>
       </div>
     );
   }
@@ -44,94 +46,30 @@ export default function ApartmentSummary() {
     return null;
   }
 
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-lg font-semibold">Total Apartments Number</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Статус
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Apartment no
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Sq/m summary
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            <tr>
-              <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                Total
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.total.count}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.total.sqm.toFixed(0)} м²
-              </td>
-            </tr>
-            <tr>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                Upcoming
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.upcoming.count}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.upcoming.sqm.toFixed(0)} м²
-              </td>
-            </tr>
-            <tr>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                Available
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.available.count}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.available.sqm.toFixed(0)} м²
-              </td>
-            </tr>
-            <tr>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                Reserved
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.reserved.count}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.reserved.sqm.toFixed(0)} м²
-              </td>
-            </tr>
-            <tr>
-              <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                Sold
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.sold.count}
-              </td>
-              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
-                {data.sold.sqm.toFixed(0)} м²
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  const stats = [
+    { label: 'Total', count: data.total.count, sqm: data.total.sqm, color: 'bg-gray-100 text-gray-700' },
+    { label: 'Upcoming', count: data.upcoming.count, sqm: data.upcoming.sqm, color: 'bg-gray-50 text-gray-600' },
+    { label: 'Available', count: data.available.count, sqm: data.available.sqm, color: 'bg-green-50 text-green-700' },
+    { label: 'Reserved', count: data.reserved.count, sqm: data.reserved.sqm, color: 'bg-yellow-50 text-yellow-700' },
+    { label: 'Sold', count: data.sold.count, sqm: data.sold.sqm, color: 'bg-blue-50 text-blue-700' },
+  ];
 
-      {/* Pie Chart placeholder - можно добавить библиотеку для графиков позже */}
-      <div className="mt-6">
-        <h3 className="mb-2 text-sm font-medium text-gray-700">
-          Распределение по статусам (Pie Chart)
-        </h3>
-        <div className="flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-8">
-          <p className="text-sm text-gray-500">
-            График будет здесь (можно добавить библиотеку для графиков)
-          </p>
-        </div>
+  return (
+    <div className="card p-6">
+      <h2 className="mb-6 text-xl font-semibold text-gray-900">Apartment Summary</h2>
+      
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+        {stats.map((stat) => (
+          <div key={stat.label} className={`rounded-lg border p-4 ${stat.color}`}>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide opacity-70">
+              {stat.label}
+            </p>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold">{stat.count}</p>
+              <p className="text-sm opacity-80">{stat.sqm.toFixed(0)} m²</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
