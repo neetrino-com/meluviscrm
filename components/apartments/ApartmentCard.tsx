@@ -94,20 +94,76 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
     try {
       const apiData: any = {};
       
-      if (formData.sqm !== undefined) apiData.sqm = formData.sqm;
-      if (formData.price_sqm !== undefined) apiData.priceSqm = formData.price_sqm;
-      if (formData.total_paid !== undefined) apiData.totalPaid = formData.total_paid;
-      if (formData.dealDate !== undefined) apiData.dealDate = formData.dealDate || null;
-      if (formData.ownershipName !== undefined) apiData.ownershipName = formData.ownershipName || null;
-      if (formData.email !== undefined) apiData.email = formData.email || null;
-      if (formData.phone !== undefined) apiData.phone = formData.phone || null;
-      if (formData.passportTaxNo !== undefined) apiData.passportTaxNo = formData.passportTaxNo || null;
-      if (formData.salesType !== undefined) apiData.salesType = formData.salesType;
-      if (formData.dealDescription !== undefined) apiData.dealDescription = formData.dealDescription || null;
-      if (formData.matterLink !== undefined) apiData.matterLink = formData.matterLink || null;
-      if (formData.exteriorLink !== undefined) apiData.exteriorLink = formData.exteriorLink || null;
-      if (formData.exteriorLink2 !== undefined) apiData.exteriorLink2 = formData.exteriorLink2 || null;
-      if (formData.floorplanDistribution !== undefined) apiData.floorplanDistribution = formData.floorplanDistribution || null;
+      // Числовые поля - преобразуем в число или null (0 тоже становится null для sqm и priceSqm)
+      if (formData.sqm !== undefined) {
+        const sqmNum = typeof formData.sqm === 'string' ? parseFloat(formData.sqm) : formData.sqm;
+        apiData.sqm = sqmNum === null || sqmNum === 0 || isNaN(sqmNum) ? null : sqmNum;
+      }
+      if (formData.price_sqm !== undefined) {
+        const priceSqmNum = typeof formData.price_sqm === 'string' ? parseFloat(formData.price_sqm) : formData.price_sqm;
+        apiData.priceSqm = priceSqmNum === null || priceSqmNum === 0 || isNaN(priceSqmNum) ? null : priceSqmNum;
+      }
+      if (formData.total_paid !== undefined) {
+        const totalPaidNum = typeof formData.total_paid === 'string' ? parseFloat(formData.total_paid) : formData.total_paid;
+        apiData.totalPaid = totalPaidNum === null || isNaN(totalPaidNum) ? null : totalPaidNum;
+      }
+      
+      // Дата - преобразуем пустую строку в null
+      if (formData.dealDate !== undefined) {
+        apiData.dealDate = formData.dealDate && formData.dealDate.trim() !== '' 
+          ? formData.dealDate 
+          : null;
+      }
+      
+      // Текстовые поля - преобразуем пустые строки в null
+      if (formData.ownershipName !== undefined) {
+        apiData.ownershipName = formData.ownershipName && formData.ownershipName.trim() !== '' 
+          ? formData.ownershipName 
+          : null;
+      }
+      if (formData.email !== undefined) {
+        apiData.email = formData.email && formData.email.trim() !== '' 
+          ? formData.email 
+          : null;
+      }
+      if (formData.phone !== undefined) {
+        apiData.phone = formData.phone && formData.phone.trim() !== '' 
+          ? formData.phone 
+          : null;
+      }
+      if (formData.passportTaxNo !== undefined) {
+        apiData.passportTaxNo = formData.passportTaxNo && formData.passportTaxNo.trim() !== '' 
+          ? formData.passportTaxNo 
+          : null;
+      }
+      if (formData.salesType !== undefined) {
+        apiData.salesType = formData.salesType;
+      }
+      if (formData.dealDescription !== undefined) {
+        apiData.dealDescription = formData.dealDescription && formData.dealDescription.trim() !== '' 
+          ? formData.dealDescription 
+          : null;
+      }
+      if (formData.matterLink !== undefined) {
+        apiData.matterLink = formData.matterLink && formData.matterLink.trim() !== '' 
+          ? formData.matterLink 
+          : null;
+      }
+      if (formData.exteriorLink !== undefined) {
+        apiData.exteriorLink = formData.exteriorLink && formData.exteriorLink.trim() !== '' 
+          ? formData.exteriorLink 
+          : null;
+      }
+      if (formData.exteriorLink2 !== undefined) {
+        apiData.exteriorLink2 = formData.exteriorLink2 && formData.exteriorLink2.trim() !== '' 
+          ? formData.exteriorLink2 
+          : null;
+      }
+      if (formData.floorplanDistribution !== undefined) {
+        apiData.floorplanDistribution = formData.floorplanDistribution && formData.floorplanDistribution.trim() !== '' 
+          ? formData.floorplanDistribution 
+          : null;
+      }
 
       const response = await fetch(`/api/apartments/${apartmentId}`, {
         method: 'PUT',
@@ -117,6 +173,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API Error:', errorData);
         throw new Error(errorData.error || 'Failed to save');
       }
 
@@ -126,7 +183,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
       setEditing(false);
     } catch (err) {
       console.error('Save error:', err);
-      alert('Failed to save changes');
+      alert(err instanceof Error ? err.message : 'Failed to save changes');
     }
   };
 
