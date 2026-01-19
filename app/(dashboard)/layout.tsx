@@ -1,7 +1,13 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import LogoutButton from '@/components/layout/LogoutButton';
+import SidebarNav from '@/components/layout/SidebarNav';
+import { 
+  Home, 
+  LayoutDashboard, 
+  MapPin, 
+  Building2 
+} from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -17,12 +23,12 @@ export default async function DashboardLayout({
   const isAdmin = session.user.role === 'ADMIN';
 
   const navItems = [
-    { href: '/apartments', label: 'Apartments', icon: '🏠' },
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { href: '/apartments', label: 'Apartments', icon: Home },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     ...(isAdmin
       ? [
-          { href: '/admin/districts', label: 'Districts', icon: '📍' },
-          { href: '/admin/buildings', label: 'Buildings', icon: '🏢' },
+          { href: '/admin/districts', label: 'Districts', icon: MapPin },
+          { href: '/admin/buildings', label: 'Buildings', icon: Building2 },
         ]
       : []),
   ];
@@ -38,25 +44,14 @@ export default async function DashboardLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <span className="mr-3 text-lg">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <SidebarNav navItems={navItems} />
 
           {/* User info */}
           <div className="border-t border-gray-200 p-4">
-            <div className="mb-3 rounded-lg bg-gray-50 px-3 py-2">
+            <div className="mb-3 rounded-lg bg-gray-50 px-3 py-2.5">
               <p className="text-xs font-medium text-gray-500">Logged in as</p>
               <p className="text-sm font-semibold text-gray-900">{session.user.email}</p>
-              <p className="text-xs text-gray-500">{session.user.role}</p>
+              <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
             </div>
             <LogoutButton />
           </div>
