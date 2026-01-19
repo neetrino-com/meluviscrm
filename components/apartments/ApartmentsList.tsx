@@ -495,9 +495,9 @@ export default function ApartmentsList() {
                     <button
                       key={i}
                       onClick={() => setCurrentPage(i)}
-                      className={`${
+                      className={`relative ${
                         i === current
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'border-l-4 border-l-blue-600 bg-white font-semibold text-gray-900'
                           : 'btn-secondary'
                       }`}
                     >
