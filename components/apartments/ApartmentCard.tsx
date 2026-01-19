@@ -276,6 +276,21 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'UPCOMING':
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'AVAILABLE':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'RESERVED':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'SOLD':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -322,7 +337,12 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             <select
               value={apartment.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`badge border ${getStatusColor(apartment.status)} cursor-pointer text-sm font-medium appearance-none bg-right bg-no-repeat pr-8 pl-3 py-2 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                backgroundPosition: 'right 0.75rem center',
+                paddingRight: '2rem',
+              }}
             >
               <option value="UPCOMING">Upcoming</option>
               <option value="AVAILABLE">Available</option>
