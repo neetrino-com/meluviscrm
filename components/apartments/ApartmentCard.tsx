@@ -123,10 +123,35 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
         apiData.totalPaid = totalPaidNum;
       }
       
-      // Дата - преобразуем пустую строку в null
+      // Дата - преобразуем в формат YYYY-MM-DD (без времени)
       if (formData.dealDate !== undefined) {
-        const dateStr = parseString(formData.dealDate);
-        apiData.dealDate = dateStr;
+        if (formData.dealDate === null || formData.dealDate === '') {
+          apiData.dealDate = null;
+        } else {
+          // Если это ISO строка (с T и Z), извлекаем только дату
+          // Если это уже YYYY-MM-DD, оставляем как есть
+          let dateStr = String(formData.dealDate);
+          if (dateStr.includes('T')) {
+            // ISO формат: "2026-01-08T00:00:00.000Z" -> "2026-01-08"
+            dateStr = dateStr.split('T')[0];
+          }
+          // Проверяем, что это валидный формат YYYY-MM-DD
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            apiData.dealDate = dateStr;
+          } else {
+            // Пытаемся преобразовать через Date
+            try {
+              const date = new Date(dateStr);
+              if (!isNaN(date.getTime())) {
+                apiData.dealDate = date.toISOString().split('T')[0];
+              } else {
+                apiData.dealDate = null;
+              }
+            } catch {
+              apiData.dealDate = null;
+            }
+          }
+        }
       }
       
       // Текстовые поля - преобразуем пустые строки в null
