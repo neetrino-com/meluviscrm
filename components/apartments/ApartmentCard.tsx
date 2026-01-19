@@ -239,7 +239,11 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
       if (!response.ok) throw new Error('Failed to update status');
 
       const updated = await response.json();
-      setApartment({ ...apartment!, status: updated.status });
+      // Обновляем статус сразу
+      setApartment({ ...apartment!, status: updated.status.toUpperCase() });
+      
+      // Обновляем данные с сервера без кэша для получения актуальной информации
+      await fetchApartment(true);
     } catch (err) {
       console.error('Status update error:', err);
       alert('Failed to update status');
