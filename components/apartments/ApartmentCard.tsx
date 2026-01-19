@@ -77,13 +77,13 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
           router.push('/apartments');
           return;
         }
-        throw new Error('Ошибка загрузки');
+        throw new Error('Failed to load apartment');
       }
       const data = await response.json();
       setApartment(data);
       setFormData(data);
     } catch (err) {
-      setError('Не удалось загрузить квартиру');
+      setError('Failed to load apartment');
       console.error(err);
     } finally {
       setLoading(false);
@@ -100,13 +100,13 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Ошибка сохранения');
+        throw new Error(error.error || 'Failed to save');
       }
 
       setEditing(false);
       fetchApartment();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Ошибка сохранения');
+      alert(err instanceof Error ? err.message : 'Failed to save');
     }
   };
 
@@ -118,24 +118,54 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error('Ошибка обновления статуса');
+      if (!response.ok) throw new Error('Failed to update status');
 
       fetchApartment();
     } catch (err) {
-      alert('Не удалось изменить статус');
+      alert('Failed to update status');
+    }
+  };
+
+  const getSalesTypeLabel = (type: string) => {
+    switch (type) {
+      case 'UNSOLD':
+        return 'Unsold';
+      case 'MORTGAGE':
+        return 'Mortgage';
+      case 'CASH':
+        return 'Cash';
+      case 'TIMEBASED':
+        return 'Timebased';
+      default:
+        return type;
+    }
+  };
+
+  const getSalesTypeValue = (label: string) => {
+    switch (label) {
+      case 'Unsold':
+        return 'UNSOLD';
+      case 'Mortgage':
+        return 'MORTGAGE';
+      case 'Cash':
+        return 'CASH';
+      case 'Timebased':
+        return 'TIMEBASED';
+      default:
+        return label;
     }
   };
 
   if (loading) {
-    return <div className="text-center py-8">Загрузка...</div>;
+    return <div className="text-center py-8">Loading...</div>;
   }
 
   if (error || !apartment) {
     return (
       <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm text-red-800">{error || 'Квартира не найдена'}</p>
+        <p className="text-sm text-red-800">{error || 'Apartment not found'}</p>
         <Link href="/apartments" className="mt-2 text-blue-600 hover:underline">
-          Вернуться к списку
+          Back to list
         </Link>
       </div>
     );
@@ -148,14 +178,14 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
           href="/apartments"
           className="text-blue-600 hover:text-blue-900"
         >
-          ← Назад к списку
+          ← Back to list
         </Link>
       </div>
 
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Квартира {apartment.apartmentNo}
+            Apartment {apartment.apartmentNo}
           </h1>
           <p className="text-sm text-gray-500">
             {apartment.district_name} - {apartment.building_name}
@@ -167,10 +197,10 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             onChange={(e) => handleStatusChange(e.target.value)}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           >
-            <option value="UPCOMING">Предстоящая</option>
-            <option value="AVAILABLE">Доступна</option>
-            <option value="RESERVED">Зарезервирована</option>
-            <option value="SOLD">Продана</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
           </select>
           {editing ? (
             <>
@@ -178,7 +208,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 onClick={handleSave}
                 className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
               >
-                Сохранить
+                Save
               </button>
               <button
                 onClick={() => {
@@ -187,7 +217,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 }}
                 className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 hover:bg-gray-300"
               >
-                Отмена
+                Cancel
               </button>
             </>
           ) : (
@@ -195,7 +225,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               onClick={() => setEditing(true)}
               className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
             >
-              Редактировать
+              Edit
             </button>
           )}
         </div>
@@ -212,7 +242,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            Обзор
+            Overview
           </button>
           <button
             onClick={() => setActiveTab('deal')}
@@ -222,7 +252,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            Сделка
+            Deal
           </button>
           <button
             onClick={() => setActiveTab('links')}
@@ -232,7 +262,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            Ссылки и файлы
+            Links & Files
           </button>
         </nav>
       </div>
@@ -242,9 +272,10 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
         {activeTab === 'overview' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              {/* Permanent fields - not editable */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Номер квартиры
+                  Apartment No
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
                   {apartment.apartmentNo}
@@ -252,33 +283,67 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Тип квартиры
+                  Apartment Type
                 </label>
                 <p className="mt-1 text-sm text-gray-900">
                   {apartment.apartmentType || '-'}
                 </p>
               </div>
+              
+              {/* Editable fields */}
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Площадь
+                  Sq/m
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
-                  {apartment.sqm ? `${apartment.sqm} м²` : '-'}
-                </p>
+                {editing ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.sqm || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        sqm: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="mt-1 text-sm text-gray-900">
+                    {apartment.sqm ? `${apartment.sqm} m²` : '-'}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Цена за м²
+                  Price Sq/m
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
-                  {apartment.price_sqm
-                    ? `${(apartment.price_sqm / 1000).toFixed(0)}K AMD`
-                    : '-'}
-                </p>
+                {editing ? (
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price_sqm || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price_sqm: e.target.value
+                          ? parseFloat(e.target.value)
+                          : null,
+                      })
+                    }
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  />
+                ) : (
+                  <p className="mt-1 text-sm text-gray-900">
+                    {apartment.price_sqm
+                      ? `${(apartment.price_sqm / 1000).toFixed(0)}K AMD`
+                      : '-'}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Общая цена
+                  Total Price
                 </label>
                 <p className="mt-1 text-sm font-semibold text-gray-900">
                   {apartment.total_price
@@ -288,19 +353,29 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Тип продажи
+                  Sales Type
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
-                  {apartment.salesType === 'UNSOLD'
-                    ? 'Не продано'
-                    : apartment.salesType === 'MORTGAGE'
-                    ? 'Ипотека'
-                    : apartment.salesType === 'CASH'
-                    ? 'Наличные'
-                    : apartment.salesType === 'TIMEBASED'
-                    ? 'Рассрочка'
-                    : '-'}
-                </p>
+                {editing ? (
+                  <select
+                    value={getSalesTypeLabel(formData.salesType || apartment.salesType)}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        salesType: getSalesTypeValue(e.target.value),
+                      })
+                    }
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  >
+                    <option value="Unsold">Unsold</option>
+                    <option value="Mortgage">Mortgage</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Timebased">Timebased</option>
+                  </select>
+                ) : (
+                  <p className="mt-1 text-sm text-gray-900">
+                    {getSalesTypeLabel(apartment.salesType)}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -312,7 +387,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Дата сделки
+                    Deal Date
                   </label>
                   <input
                     type="date"
@@ -329,7 +404,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Имя владельца
+                    Ownership Name
                   </label>
                   <input
                     type="text"
@@ -355,7 +430,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Телефон
+                    Phone
                   </label>
                   <input
                     type="text"
@@ -368,7 +443,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Паспорт/Налоговый номер
+                    Passport/Tax No
                   </label>
                   <input
                     type="text"
@@ -381,7 +456,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Оплачено
+                    Total Paid
                   </label>
                   <input
                     type="number"
@@ -399,7 +474,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Описание сделки (макс. 500 символов)
+                    Deal Description (max 500 characters)
                   </label>
                   <textarea
                     value={formData.dealDescription || ''}
@@ -422,17 +497,17 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Дата сделки
+                    Deal Date
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {apartment.dealDate
-                      ? new Date(apartment.dealDate).toLocaleDateString('ru-RU')
+                      ? new Date(apartment.dealDate).toLocaleDateString('en-US')
                       : '-'}
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Имя владельца
+                    Ownership Name
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {apartment.ownershipName || '-'}
@@ -446,7 +521,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Телефон
+                    Phone
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {apartment.phone || '-'}
@@ -454,7 +529,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Паспорт/Налоговый номер
+                    Passport/Tax No
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {apartment.passportTaxNo || '-'}
@@ -462,7 +537,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Оплачено
+                    Total Paid
                   </label>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {apartment.total_paid
@@ -472,7 +547,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Остаток
+                    Balance
                   </label>
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {apartment.balance
@@ -482,7 +557,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </div>
                 <div className="col-span-2">
                   <label className="text-sm font-medium text-gray-700">
-                    Описание сделки
+                    Deal Description
                   </label>
                   <p className="mt-1 text-sm text-gray-900">
                     {apartment.dealDescription || '-'}
@@ -587,7 +662,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">
-                Распределение планировки (макс. 500 символов)
+                Floorplan Distribution (max 500 characters)
               </label>
               {editing ? (
                 <>
@@ -614,7 +689,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               )}
             </div>
 
-            {/* Загрузка файлов */}
+            {/* File Upload */}
             {apartment.attachments && (
               <div className="mt-6 border-t border-gray-200 pt-6">
                 <FileUpload

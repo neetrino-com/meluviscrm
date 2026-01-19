@@ -21,11 +21,11 @@ export default function DistrictsList() {
     try {
       setLoading(true);
       const response = await fetch('/api/districts');
-      if (!response.ok) throw new Error('Ошибка загрузки');
+      if (!response.ok) throw new Error('Failed to load');
       const data = await response.json();
       setDistricts(data);
     } catch (err) {
-      setError('Не удалось загрузить районы');
+      setError('Failed to load districts');
       console.error(err);
     } finally {
       setLoading(false);
@@ -43,7 +43,7 @@ export default function DistrictsList() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Вы уверены, что хотите удалить этот район?')) {
+    if (!confirm('Are you sure you want to delete this district?')) {
       return;
     }
 
@@ -54,12 +54,12 @@ export default function DistrictsList() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Ошибка удаления');
+        throw new Error(error.error || 'Failed to delete');
       }
 
       fetchDistricts();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Ошибка удаления');
+      alert(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -70,7 +70,7 @@ export default function DistrictsList() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Загрузка...</div>;
+    return <div className="text-center py-8">Loading...</div>;
   }
 
   return (
@@ -86,7 +86,7 @@ export default function DistrictsList() {
           onClick={handleCreate}
           className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          + Создать район
+          + Create District
         </button>
       </div>
 
@@ -106,13 +106,13 @@ export default function DistrictsList() {
                 ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Название
+                Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Slug
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Действия
+                Actions
               </th>
             </tr>
           </thead>
@@ -120,7 +120,7 @@ export default function DistrictsList() {
             {districts.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                  Нет районов. Создайте первый район.
+                  No districts. Create the first district.
                 </td>
               </tr>
             ) : (
@@ -140,13 +140,13 @@ export default function DistrictsList() {
                       onClick={() => handleEdit(district)}
                       className="mr-2 text-blue-600 hover:text-blue-900"
                     >
-                      Редактировать
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(district.id)}
                       className="text-red-600 hover:text-red-900"
                     >
-                      Удалить
+                      Delete
                     </button>
                   </td>
                 </tr>

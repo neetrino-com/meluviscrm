@@ -75,11 +75,11 @@ export default function ApartmentsList() {
         url += `status=${selectedStatus}&`;
       }
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Ошибка загрузки');
+      if (!response.ok) throw new Error('Failed to load');
       const data = await response.json();
       setApartments(data.items || []);
     } catch (err) {
-      setError('Не удалось загрузить квартиры');
+      setError('Failed to load apartments');
       console.error(err);
     } finally {
       setLoading(false);
@@ -95,12 +95,12 @@ export default function ApartmentsList() {
       });
 
       if (!response.ok) {
-        throw new Error('Ошибка обновления статуса');
+        throw new Error('Failed to update status');
       }
 
       fetchApartments();
     } catch (err) {
-      alert('Не удалось изменить статус');
+      alert('Failed to update status');
       console.error(err);
     }
   };
@@ -123,20 +123,20 @@ export default function ApartmentsList() {
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'upcoming':
-        return 'Предстоящая';
+        return 'Upcoming';
       case 'available':
-        return 'Доступна';
+        return 'Available';
       case 'reserved':
-        return 'Зарезервирована';
+        return 'Reserved';
       case 'sold':
-        return 'Продана';
+        return 'Sold';
       default:
         return status;
     }
   };
 
   if (loading) {
-    return <div className="text-center py-8">Загрузка...</div>;
+    return <div className="text-center py-8">Loading...</div>;
   }
 
   return (
@@ -153,13 +153,13 @@ export default function ApartmentsList() {
             onClick={() => setShowForm(true)}
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
-            + Создать квартиру
+            + Create Apartment
           </button>
         )}
         <div className="flex items-center space-x-4">
         <div>
           <label className="text-sm font-medium text-gray-700">
-            Фильтр по зданию:
+            Filter by Building:
           </label>
           <select
             value={selectedBuilding || ''}
@@ -168,7 +168,7 @@ export default function ApartmentsList() {
             }
             className="ml-2 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           >
-            <option value="">Все здания</option>
+            <option value="">All Buildings</option>
             {buildings.map((building) => (
               <option key={building.id} value={building.id}>
                 {building.district.name} - {building.name}
@@ -179,18 +179,18 @@ export default function ApartmentsList() {
 
         <div>
           <label className="text-sm font-medium text-gray-700">
-            Фильтр по статусу:
+            Filter by Status:
           </label>
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="ml-2 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           >
-            <option value="">Все статусы</option>
-            <option value="UPCOMING">Предстоящая</option>
-            <option value="AVAILABLE">Доступна</option>
-            <option value="RESERVED">Зарезервирована</option>
-            <option value="SOLD">Продана</option>
+            <option value="">All Statuses</option>
+            <option value="UPCOMING">Upcoming</option>
+            <option value="AVAILABLE">Available</option>
+            <option value="RESERVED">Reserved</option>
+            <option value="SOLD">Sold</option>
           </select>
         </div>
         </div>
@@ -212,28 +212,28 @@ export default function ApartmentsList() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Номер
+                No
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Здание
+                Building
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Статус
+                Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Площадь (м²)
+                Area (m²)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Цена
+                Price
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Оплачено
+                Paid
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Остаток
+                Balance
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Действия
+                Actions
               </th>
             </tr>
           </thead>
@@ -241,7 +241,7 @@ export default function ApartmentsList() {
             {apartments.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                  Нет квартир. Создайте первую квартиру.
+                  No apartments. Create the first apartment.
                 </td>
               </tr>
             ) : (
@@ -259,14 +259,14 @@ export default function ApartmentsList() {
                       onChange={(e) => handleStatusChange(apt.id, e.target.value)}
                       className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(apt.status)} border-0 focus:ring-2 focus:ring-blue-500`}
                     >
-                      <option value="UPCOMING">Предстоящая</option>
-                      <option value="AVAILABLE">Доступна</option>
-                      <option value="RESERVED">Зарезервирована</option>
-                      <option value="SOLD">Продана</option>
+                      <option value="UPCOMING">Upcoming</option>
+                      <option value="AVAILABLE">Available</option>
+                      <option value="RESERVED">Reserved</option>
+                      <option value="SOLD">Sold</option>
                     </select>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                    {apt.sqm ? `${apt.sqm} м²` : '-'}
+                    {apt.sqm ? `${apt.sqm} m²` : '-'}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                     {apt.total_price
@@ -288,7 +288,7 @@ export default function ApartmentsList() {
                       href={`/apartments/${apt.id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
-                      Открыть
+                      Open
                     </Link>
                   </td>
                 </tr>

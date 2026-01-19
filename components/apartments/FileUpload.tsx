@@ -68,7 +68,7 @@ export default function FileUpload({
   };
 
   const handleDelete = async (attachmentId: number) => {
-    if (!confirm('Удалить этот файл?')) return;
+    if (!confirm('Delete this file?')) return;
 
     try {
       const response = await fetch(
@@ -98,13 +98,13 @@ export default function FileUpload({
   const getFileTypeLabel = (type: string) => {
     switch (type) {
       case 'AGREEMENT':
-        return 'Договор';
+        return 'Agreement';
       case 'FLOORPLAN':
-        return 'Планировка';
+        return 'Floorplan';
       case 'IMAGE':
-        return 'Изображение';
+        return 'Image';
       case 'PROGRESS_IMAGE':
-        return 'Фото прогресса';
+        return 'Progress Image';
       default:
         return type;
     }
@@ -119,7 +119,7 @@ export default function FileUpload({
       <div className="mt-4">
         <h4 className="mb-2 text-sm font-medium text-gray-700">{label}</h4>
         {files.length === 0 ? (
-          <p className="text-sm text-gray-500">Нет файлов</p>
+          <p className="text-sm text-gray-500">No files</p>
         ) : (
           <div className="space-y-2">
             {files.map((file) => (
@@ -141,11 +141,11 @@ export default function FileUpload({
                     {new Date(file.createdAt).toLocaleDateString('ru-RU')}
                   </p>
                 </div>
-                <button
+                  <button
                   onClick={() => handleDelete(file.id)}
                   className="ml-2 rounded-md bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
                 >
-                  Удалить
+                  Delete
                 </button>
               </div>
             ))}
@@ -157,30 +157,30 @@ export default function FileUpload({
 
   return (
     <div className="space-y-6">
-      {/* Загрузка файлов */}
+      {/* File Upload */}
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
         <h3 className="mb-4 text-sm font-medium text-gray-700">
-          Загрузить файл
+          Upload File
         </h3>
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Тип файла
+              File Type
             </label>
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
-              <option value="IMAGE">Изображение</option>
-              <option value="PROGRESS_IMAGE">Фото прогресса</option>
-              <option value="FLOORPLAN">Планировка</option>
-              <option value="AGREEMENT">Договор</option>
+              <option value="IMAGE">Image</option>
+              <option value="PROGRESS_IMAGE">Progress Image</option>
+              <option value="FLOORPLAN">Floorplan</option>
+              <option value="AGREEMENT">Agreement</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Файл
+              File
             </label>
             <input
               type="file"
@@ -194,7 +194,7 @@ export default function FileUpload({
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Максимальный размер: 10MB
+              Maximum size: 10MB
             </p>
           </div>
           {uploadError && (
@@ -203,7 +203,7 @@ export default function FileUpload({
             </div>
           )}
           {uploading && (
-            <div className="text-sm text-gray-600">Загрузка...</div>
+            <div className="text-sm text-gray-600">Uploading...</div>
           )}
         </div>
       </div>
@@ -212,22 +212,22 @@ export default function FileUpload({
       {renderFileList(
         attachments.images_files,
         'IMAGE',
-        'Изображения'
+        'Images'
       )}
       {renderFileList(
         attachments.progress_images_files,
         'PROGRESS_IMAGE',
-        'Фото прогресса'
+        'Progress Images'
       )}
       {renderFileList(
         attachments.floorplans_files,
         'FLOORPLAN',
-        'Планировки'
+        'Floorplans'
       )}
       {renderFileList(
         attachments.agreement_files,
         'AGREEMENT',
-        'Договоры'
+        'Agreements'
       )}
     </div>
   );

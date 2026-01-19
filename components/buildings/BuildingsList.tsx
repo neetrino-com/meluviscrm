@@ -21,7 +21,7 @@ export default function BuildingsList() {
   const fetchDistricts = async () => {
     try {
       const response = await fetch('/api/districts');
-      if (!response.ok) throw new Error('Ошибка загрузки районов');
+      if (!response.ok) throw new Error('Failed to load districts');
       const data = await response.json();
       setDistricts(data);
     } catch (err) {
@@ -36,11 +36,11 @@ export default function BuildingsList() {
         ? `/api/buildings?districtId=${selectedDistrict}`
         : '/api/buildings';
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Ошибка загрузки');
+      if (!response.ok) throw new Error('Failed to load');
       const data = await response.json();
       setBuildings(data);
     } catch (err) {
-      setError('Не удалось загрузить здания');
+      setError('Failed to load buildings');
       console.error(err);
     } finally {
       setLoading(false);
@@ -67,7 +67,7 @@ export default function BuildingsList() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Вы уверены, что хотите удалить это здание?')) {
+    if (!confirm('Are you sure you want to delete this building?')) {
       return;
     }
 
@@ -78,12 +78,12 @@ export default function BuildingsList() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Ошибка удаления');
+        throw new Error(error.error || 'Failed to delete');
       }
 
       fetchBuildings();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Ошибка удаления');
+      alert(err instanceof Error ? err.message : 'Failed to delete');
     }
   };
 
@@ -94,7 +94,7 @@ export default function BuildingsList() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Загрузка...</div>;
+    return <div className="text-center py-8">Loading...</div>;
   }
 
   return (
@@ -108,7 +108,7 @@ export default function BuildingsList() {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <label className="text-sm font-medium text-gray-700">
-            Фильтр по району:
+            Filter by District:
           </label>
           <select
             value={selectedDistrict || ''}
@@ -119,7 +119,7 @@ export default function BuildingsList() {
             }
             className="rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           >
-            <option value="">Все районы</option>
+            <option value="">All Districts</option>
             {districts.map((district) => (
               <option key={district.id} value={district.id}>
                 {district.name}
@@ -131,7 +131,7 @@ export default function BuildingsList() {
           onClick={handleCreate}
           className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          + Создать здание
+          + Create Building
         </button>
       </div>
 
@@ -152,16 +152,16 @@ export default function BuildingsList() {
                 ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Район
+                District
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Название
+                Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Slug
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                Действия
+                Actions
               </th>
             </tr>
           </thead>
@@ -169,7 +169,7 @@ export default function BuildingsList() {
             {buildings.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  Нет зданий. Создайте первое здание.
+                  No buildings. Create the first building.
                 </td>
               </tr>
             ) : (
@@ -192,13 +192,13 @@ export default function BuildingsList() {
                       onClick={() => handleEdit(building)}
                       className="mr-2 text-blue-600 hover:text-blue-900"
                     >
-                      Редактировать
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(building.id)}
                       className="text-red-600 hover:text-red-900"
                     >
-                      Удалить
+                      Delete
                     </button>
                   </td>
                 </tr>

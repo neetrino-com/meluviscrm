@@ -12,7 +12,7 @@ export default async function DistrictsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Управление районами</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Districts Management</h1>
       </div>
       <DistrictsList />
     </div>
