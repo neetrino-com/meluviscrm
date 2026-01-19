@@ -337,7 +337,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             <select
               value={apartment.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className={`badge border-2 ${getStatusColor(apartment.status)} cursor-pointer text-xl font-bold appearance-none bg-right bg-no-repeat transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              className={`badge border-2 ${getStatusColor(apartment.status)} cursor-pointer text-2xl font-bold appearance-none bg-right bg-no-repeat transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                 backgroundPosition: 'right 1.5rem center',
