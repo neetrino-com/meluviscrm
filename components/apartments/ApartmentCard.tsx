@@ -337,17 +337,16 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             <select
               value={apartment.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className={`badge border-2 ${getStatusColor(apartment.status)} cursor-pointer font-bold appearance-none bg-right bg-no-repeat transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              className={`badge border-2 ${getStatusColor(apartment.status)} cursor-pointer text-3xl font-bold appearance-none bg-right bg-no-repeat transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
               style={{
-                fontSize: '2rem',
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Cpath d='M7 10L14 17L21 10' stroke='currentColor' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                 backgroundPosition: 'right 1.75rem center',
                 paddingTop: '1.25rem',
                 paddingBottom: '1.25rem',
-                paddingLeft: '2rem',
+                paddingLeft: '1.75rem',
                 paddingRight: '4rem',
-                minWidth: '280px',
-                borderRadius: '0.75rem',
+                minWidth: '260px',
+                borderRadius: '0.875rem',
               }}
             >
               <option value="UPCOMING">Upcoming</option>
