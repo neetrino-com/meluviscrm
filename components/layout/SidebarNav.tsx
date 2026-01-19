@@ -12,11 +12,19 @@ import {
 type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  iconName: string; // Строковый идентификатор иконки
 };
 
 type SidebarNavProps = {
   navItems: NavItem[];
+};
+
+// Маппинг иконок
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Home,
+  LayoutDashboard,
+  MapPin,
+  Building2,
 };
 
 export default function SidebarNav({ navItems }: SidebarNavProps) {
@@ -25,7 +33,9 @@ export default function SidebarNav({ navItems }: SidebarNavProps) {
   return (
     <nav className="flex-1 space-y-1 px-3 py-4">
       {navItems.map((item) => {
-        const Icon = item.icon;
+        const Icon = iconMap[item.iconName];
+        if (!Icon) return null;
+        
         const isActive = pathname === item.href || 
           (item.href !== '/dashboard' && pathname.startsWith(item.href));
         

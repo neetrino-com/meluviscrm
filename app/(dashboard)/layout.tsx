@@ -2,12 +2,6 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import LogoutButton from '@/components/layout/LogoutButton';
 import SidebarNav from '@/components/layout/SidebarNav';
-import { 
-  Home, 
-  LayoutDashboard, 
-  MapPin, 
-  Building2 
-} from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -23,12 +17,12 @@ export default async function DashboardLayout({
   const isAdmin = session.user.role === 'ADMIN';
 
   const navItems = [
-    { href: '/apartments', label: 'Apartments', icon: Home },
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/apartments', label: 'Apartments', iconName: 'Home' },
+    { href: '/dashboard', label: 'Dashboard', iconName: 'LayoutDashboard' },
     ...(isAdmin
       ? [
-          { href: '/admin/districts', label: 'Districts', icon: MapPin },
-          { href: '/admin/buildings', label: 'Buildings', icon: Building2 },
+          { href: '/admin/districts', label: 'Districts', iconName: 'MapPin' },
+          { href: '/admin/buildings', label: 'Buildings', iconName: 'Building2' },
         ]
       : []),
   ];
