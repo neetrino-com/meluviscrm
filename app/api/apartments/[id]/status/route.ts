@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { apartmentService } from '@/services/apartment.service';
 import { updateApartmentStatusSchema } from '@/lib/validations';
 import { z } from 'zod';
@@ -8,17 +9,22 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Проверка Bearer Token для внешнего API
-    const authHeader = request.headers.get('authorization');
-    const apiToken = process.env.API_TOKEN;
+    // Проверка сессии для внутреннего использования
+    const session = await auth();
+    
+    // Если нет сессии, проверяем Bearer Token для внешнего API
+    if (!session) {
+      const authHeader = request.headers.get('authorization');
+      const apiToken = process.env.API_TOKEN;
 
-    if (!authHeader || !apiToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      if (!authHeader || !apiToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
 
-    const token = authHeader.replace('Bearer ', '');
-    if (token !== apiToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const token = authHeader.replace('Bearer ', '');
+      if (token !== apiToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     const id = parseInt(params.id);
