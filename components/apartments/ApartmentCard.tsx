@@ -288,6 +288,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
           <div className="card p-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Basic Information</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Read-only fields at the top */}
               <div>
                 <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
                   Apartment No
@@ -300,6 +301,18 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                 </label>
                 <p className="text-base font-medium text-gray-900">{apartment.apartmentType || '-'}</p>
               </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Total Price
+                </label>
+                <p className="text-lg font-semibold text-gray-900">
+                  {apartment.total_price
+                    ? `${(apartment.total_price / 1000000).toFixed(1)}M AMD`
+                    : '-'}
+                </p>
+              </div>
+              
+              {/* Editable fields below */}
               <div>
                 <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
                   Sq/m
@@ -373,16 +386,6 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                     {getSalesTypeLabel(apartment.salesType)}
                   </p>
                 )}
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
-                  Total Price
-                </label>
-                <p className="text-lg font-semibold text-gray-900">
-                  {apartment.total_price
-                    ? `${(apartment.total_price / 1000000).toFixed(1)}M AMD`
-                    : '-'}
-                </p>
               </div>
             </div>
           </div>
