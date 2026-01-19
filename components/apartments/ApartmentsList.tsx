@@ -29,6 +29,7 @@ export default function ApartmentsList() {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 50,
@@ -171,14 +172,41 @@ export default function ApartmentsList() {
               Manage and view all apartments
             </p>
           </div>
-          {isAdmin && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn-primary"
-            >
-              + Create Apartment
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* View mode toggle */}
+            <div className="flex rounded-lg border border-gray-300 bg-white p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                title="Grid view"
+              >
+                <span className="text-base">⊞</span>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                title="List view"
+              >
+                <span className="text-base">☰</span>
+              </button>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="btn-primary"
+              >
+                + Create Apartment
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -246,12 +274,13 @@ export default function ApartmentsList() {
         {pagination.total} apartments
       </div>
 
-      {/* Cards Grid */}
+      {/* Empty state */}
       {apartments.length === 0 ? (
         <div className="card p-12 text-center">
           <p className="text-gray-500">No apartments found. Create the first apartment.</p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
+        /* Cards Grid View */
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {apartments.map((apt) => (
             <div key={apt.id} className="card card-hover p-5">
@@ -319,6 +348,92 @@ export default function ApartmentsList() {
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        /* List/Table View */
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Building
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Area (m²)
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Paid
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Balance
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {apartments.map((apt) => (
+                  <tr key={apt.id} className="hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {apt.apartmentNo}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                      {apt.building.district.name} - {apt.building.name}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4">
+                      <select
+                        value={apt.status}
+                        onChange={(e) => handleStatusChange(apt.id, e.target.value)}
+                        className={`badge border ${getStatusColor(apt.status)} cursor-pointer text-xs`}
+                      >
+                        <option value="UPCOMING">Upcoming</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="RESERVED">Reserved</option>
+                        <option value="SOLD">Sold</option>
+                      </select>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                      {apt.sqm ? `${apt.sqm} m²` : '-'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                      {apt.total_price
+                        ? `${(apt.total_price / 1000000).toFixed(1)}M AMD`
+                        : '-'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
+                      {apt.total_paid
+                        ? `${(apt.total_paid / 1000000).toFixed(1)}M AMD`
+                        : '-'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">
+                      {apt.balance
+                        ? `${(apt.balance / 1000000).toFixed(1)}M AMD`
+                        : '-'}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                      <Link
+                        href={`/apartments/${apt.id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
