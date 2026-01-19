@@ -20,28 +20,32 @@ type FileUploadProps = {
     progress_images_files: Attachment[];
   };
   onUploadSuccess: () => void;
+  fileTypeOnly?: string; // Если указан, показываем только этот тип файла
 };
 
 export default function FileUpload({
   apartmentId,
   attachments,
   onUploadSuccess,
+  fileTypeOnly,
 }: FileUploadProps) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('IMAGE');
+  const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
+  const [uploadError, setUploadError] = useState<{ [key: string]: string }>({});
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fileType: string
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    setUploadError('');
+    setUploading((prev) => ({ ...prev, [fileType]: true }));
+    setUploadError((prev) => ({ ...prev, [fileType]: '' }));
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('fileType', selectedType);
+      formData.append('fileType', fileType);
 
       const response = await fetch(
         `/api/apartments/${apartmentId}/attachments`,
@@ -53,17 +57,18 @@ export default function FileUpload({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Ошибка загрузки файла');
+        throw new Error(error.error || 'Failed to upload file');
       }
 
       onUploadSuccess();
       e.target.value = ''; // Сброс input
     } catch (err) {
-      setUploadError(
-        err instanceof Error ? err.message : 'Ошибка загрузки файла'
-      );
+      setUploadError((prev) => ({
+        ...prev,
+        [fileType]: err instanceof Error ? err.message : 'Failed to upload file',
+      }));
     } finally {
-      setUploading(false);
+      setUploading((prev) => ({ ...prev, [fileType]: false }));
     }
   };
 
@@ -113,11 +118,11 @@ export default function FileUpload({
   const renderFileList = (
     files: Attachment[],
     _type: string,
-    label: string
+    label?: string
   ) => {
     return (
-      <div className="mt-4">
-        <h4 className="mb-2 text-sm font-medium text-gray-700">{label}</h4>
+      <div className="mt-2">
+        {label && <h4 className="mb-2 text-sm font-medium text-gray-700">{label}</h4>}
         {files.length === 0 ? (
           <p className="text-sm text-gray-500">No files</p>
         ) : (
@@ -134,14 +139,14 @@ export default function FileUpload({
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:underline"
                   >
-                    {file.fileName || 'Файл'}
+                    {file.fileName || 'File'}
                   </a>
                   <p className="text-xs text-gray-500">
                     {formatFileSize(file.fileSize)} •{' '}
-                    {new Date(file.createdAt).toLocaleDateString('ru-RU')}
+                    {new Date(file.createdAt).toLocaleDateString('en-US')}
                   </p>
                 </div>
-                  <button
+                <button
                   onClick={() => handleDelete(file.id)}
                   className="ml-2 rounded-md bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200"
                 >
@@ -155,80 +160,69 @@ export default function FileUpload({
     );
   };
 
+  const fileTypes = [
+    { type: 'IMAGE', label: 'Images', accept: 'image/*' },
+    { type: 'PROGRESS_IMAGE', label: 'Progress Images', accept: 'image/*' },
+    { type: 'FLOORPLAN', label: 'Floorplans', accept: '.pdf,.doc,.docx' },
+    { type: 'AGREEMENT', label: 'Agreement', accept: '.pdf,.doc,.docx' },
+  ];
+
+  const getFileList = (type: string) => {
+    switch (type) {
+      case 'IMAGE':
+        return attachments.images_files;
+      case 'PROGRESS_IMAGE':
+        return attachments.progress_images_files;
+      case 'FLOORPLAN':
+        return attachments.floorplans_files;
+      case 'AGREEMENT':
+        return attachments.agreement_files;
+      default:
+        return [];
+    }
+  };
+
+  // Если указан fileTypeOnly, показываем только этот тип
+  const filteredFileTypes = fileTypeOnly
+    ? fileTypes.filter((ft) => ft.type === fileTypeOnly)
+    : fileTypes.filter((ft) => ft.type !== 'AGREEMENT'); // Agreement убираем из основного списка
+
   return (
     <div className="space-y-6">
-      {/* File Upload */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <h3 className="mb-4 text-sm font-medium text-gray-700">
-          Upload File
-        </h3>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              File Type
-            </label>
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-            >
-              <option value="IMAGE">Image</option>
-              <option value="PROGRESS_IMAGE">Progress Image</option>
-              <option value="FLOORPLAN">Floorplan</option>
-              <option value="AGREEMENT">Agreement</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              File
-            </label>
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              accept={
-                selectedType === 'IMAGE' || selectedType === 'PROGRESS_IMAGE'
-                  ? 'image/*'
-                  : '.pdf,.doc,.docx'
-              }
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Maximum size: 10MB
-            </p>
-          </div>
-          {uploadError && (
-            <div className="rounded-md bg-red-50 p-2">
-              <p className="text-xs text-red-800">{uploadError}</p>
-            </div>
-          )}
-          {uploading && (
-            <div className="text-sm text-gray-600">Uploading...</div>
-          )}
-        </div>
-      </div>
+      {/* File Upload Sections - отдельная кнопка для каждого типа */}
+      {filteredFileTypes.map((fileType) => {
+        const files = getFileList(fileType.type);
+        const isUploading = uploading[fileType.type] || false;
+        const error = uploadError[fileType.type];
 
-      {/* Списки файлов */}
-      {renderFileList(
-        attachments.images_files,
-        'IMAGE',
-        'Images'
-      )}
-      {renderFileList(
-        attachments.progress_images_files,
-        'PROGRESS_IMAGE',
-        'Progress Images'
-      )}
-      {renderFileList(
-        attachments.floorplans_files,
-        'FLOORPLAN',
-        'Floorplans'
-      )}
-      {renderFileList(
-        attachments.agreement_files,
-        'AGREEMENT',
-        'Agreements'
-      )}
+        return (
+          <div key={fileType.type} className="space-y-3">
+            <div className="flex items-center justify-between">
+              {!fileTypeOnly && (
+                <h4 className="text-sm font-medium text-gray-700">
+                  {fileType.label}
+                </h4>
+              )}
+              <label className="btn-secondary cursor-pointer">
+                <input
+                  type="file"
+                  onChange={(e) => handleFileUpload(e, fileType.type)}
+                  disabled={isUploading}
+                  accept={fileType.accept}
+                  className="hidden"
+                />
+                {isUploading ? 'Uploading...' : 'Select File'}
+              </label>
+            </div>
+            {error && (
+              <div className="rounded-md bg-red-50 p-2">
+                <p className="text-xs text-red-800">{error}</p>
+              </div>
+            )}
+            {renderFileList(files, fileType.type)}
+          </div>
+        );
+      })}
     </div>
   );
 }

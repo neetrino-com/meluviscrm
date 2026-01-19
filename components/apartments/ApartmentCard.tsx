@@ -599,6 +599,23 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                     {formData.dealDescription?.length || 0}/500
                   </p>
                 </div>
+                {/* Agreement Files Section */}
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Agreement (Media Attachment)
+                  </label>
+                  <FileUpload
+                    apartmentId={apartmentId}
+                    attachments={apartment.attachments || {
+                      agreement_files: [],
+                      floorplans_files: [],
+                      images_files: [],
+                      progress_images_files: [],
+                    }}
+                    onUploadSuccess={fetchApartment}
+                    fileTypeOnly="AGREEMENT"
+                  />
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -673,6 +690,23 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                   <p className="text-base text-gray-900 whitespace-pre-wrap">
                     {apartment.dealDescription || '-'}
                   </p>
+                </div>
+                {/* Agreement Files Section */}
+                <div className="col-span-2">
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Agreement (Media Attachment)
+                  </label>
+                  <FileUpload
+                    apartmentId={apartmentId}
+                    attachments={apartment.attachments || {
+                      agreement_files: [],
+                      floorplans_files: [],
+                      images_files: [],
+                      progress_images_files: [],
+                    }}
+                    onUploadSuccess={fetchApartment}
+                    fileTypeOnly="AGREEMENT"
+                  />
                 </div>
               </div>
             )}
