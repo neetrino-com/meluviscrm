@@ -856,7 +856,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               <FileUpload
                 apartmentId={apartmentId}
                 attachments={apartment.attachments}
-                onUploadSuccess={fetchApartment}
+                onUploadSuccess={refreshAfterUpload}
               />
             </div>
           )}
