@@ -375,8 +375,8 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
+      {/* Tabs and Edit Button */}
+      <div className="mb-6 flex items-center justify-between border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('overview')}
@@ -399,6 +399,28 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             Links & Files
           </button>
         </nav>
+        <div className="flex items-center gap-3">
+          {editing ? (
+            <>
+              <button onClick={handleSave} className="btn-primary">
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setEditing(false);
+                  setFormData(apartment);
+                }}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setEditing(true)} className="btn-primary">
+              Edit
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tab Content */}
@@ -742,30 +764,6 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                   />
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Edit/Save/Cancel Buttons */}
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-6">
-            {editing ? (
-              <>
-                <button onClick={handleSave} className="btn-primary">
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setEditing(false);
-                    setFormData(apartment);
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button onClick={() => setEditing(true)} className="btn-primary">
-                Edit
-              </button>
             )}
           </div>
         </div>
