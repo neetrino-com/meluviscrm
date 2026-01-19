@@ -38,7 +38,10 @@ CRM система для управления комплексом недвиж
   - [ ] Таблица `users` (Admin/Sales роли)
   - [ ] Таблица `districts` (id, name, slug, timestamps)
   - [ ] Таблица `buildings` (id, district_id, name, slug, timestamps)
-  - [ ] Таблица `apartments` (все поля из ТЗ)
+  - [ ] Таблица `apartments` (ВСЕ 24 поля из ТЗ.md):
+    - [ ] Permanent поля: district_id, building_id, apartment_no, apartment_type
+    - [ ] Read/Write поля: status, deal_date, ownership_name, email, passport_tax_no, phone, sqm, price_sqm, total_price, sales_type, total_paid, deal_description, matter_link, floorplan_distribution, exterior_link, exterior_link2
+    - [ ] Media Attachments: agreement, floorplans, images, progress_images (через таблицу apartment_attachments)
 - [ ] Миграции базы данных
 - [ ] Настройка переменных окружения (.env)
 - [ ] Настройка ESLint, Prettier
@@ -140,20 +143,34 @@ CRM система для управления комплексом недвиж
 **Приоритет:** Высокий
 
 #### Задачи:
-- [ ] Страница `/dashboard`
-- [ ] Apartment Summary:
-  - [ ] Таблица по статусам (Total, Upcoming, Available, Reserved, Sold)
-  - [ ] Подсчёт количества и общей площади (sqm)
-  - [ ] Pie chart по статусам
-- [ ] Financial Summary:
-  - [ ] Total Sold Amount, Total Paid, Balance (для Sold)
-  - [ ] Total Potential Amount (для Upcoming/Available/Reserved)
-- [ ] Sales Timeline:
-  - [ ] График продаж по месяцам
-  - [ ] Количество сделок и сумма по месяцам
-- [ ] API endpoints для данных dashboard
+- [ ] Страница `/dashboard` (SumUp Dashboard)
+- [ ] **Apartment Summary by Status:**
+  - [ ] Таблица "Total Apartments Number":
+    - [ ] Колонка "Apartment no": Total (560), Upcoming (200), Available (160), Reserved (100), Sold (100)
+    - [ ] Колонка "Sq/m summary": Total (24000), Upcoming (8000), Available (6000), Reserved (4000), Sold (4000)
+  - [ ] **Pie Charts (Pipe Charts)** - визуализация распределения:
+    - [ ] Pie chart по количеству квартир (Apartment no)
+    - [ ] Pie chart по площади (Sq/m summary)
+- [ ] **Financial Summary:**
+  - [ ] Секция "Total Sold":
+    - [ ] Sold: xxxx AMD (сумма total_price для всех Sold)
+    - [ ] Paid: xxxx AMD (сумма total_paid для всех Sold)
+    - [ ] Balance: xxxx AMD (Sold - Paid)
+  - [ ] Секция "Total available":
+    - [ ] Upcoming: xxxx AMD (сумма total_price для Upcoming)
+    - [ ] Available: xxxx AMD (сумма total_price для Available)
+    - [ ] Reserved: xxxx AMD (сумма total_price для Reserved)
+- [ ] **Sales Timeline by Month:**
+  - [ ] График продаж по месяцам (линейный или столбчатый)
+  - [ ] Ось X: месяцы
+  - [ ] Ось Y: количество сделок и/или сумма (total_price)
+  - [ ] Данные берутся из deal_date или даты смены статуса на "sold"
+- [ ] API endpoints для данных dashboard:
+  - [ ] `GET /api/dashboard/summary` - Apartment Summary
+  - [ ] `GET /api/dashboard/financial` - Financial Summary
+  - [ ] `GET /api/dashboard/timeline` - Sales Timeline
 
-**Результат:** Полнофункциональный dashboard
+**Результат:** Полнофункциональный dashboard точно как в макете
 
 ---
 
@@ -167,9 +184,10 @@ CRM система для управления комплексом недвиж
   - [ ] `POST /api/apartments/[id]/attachments` - загрузка файла
   - [ ] `DELETE /api/apartments/[id]/attachments/[fileId]` - удаление файла
 - [ ] UI для загрузки:
-  - [ ] Agreement files
-  - [ ] Floorplans files
-  - [ ] Images files
+  - [ ] Floorplans files (Read Write по ТЗ)
+  - [ ] Images files (Read Write по ТЗ)
+  - [ ] Agreement files (Non applicable, но поле должно быть)
+  - [ ] Progress images files (Non Applicible, но поле должно быть)
 - [ ] Превью изображений
 - [ ] Валидация типов и размеров файлов
 
