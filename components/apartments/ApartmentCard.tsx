@@ -371,26 +371,6 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
               <option value="RESERVED">Reserved</option>
               <option value="SOLD">Sold</option>
             </select>
-            {editing ? (
-              <>
-                <button onClick={handleSave} className="btn-primary">
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setEditing(false);
-                    setFormData(apartment);
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button onClick={() => setEditing(true)} className="btn-primary">
-                Edit
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -762,6 +742,30 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                   />
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Edit/Save/Cancel Buttons */}
+          <div className="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-6">
+            {editing ? (
+              <>
+                <button onClick={handleSave} className="btn-primary">
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setEditing(false);
+                    setFormData(apartment);
+                  }}
+                  className="btn-secondary"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setEditing(true)} className="btn-primary">
+                Edit
+              </button>
             )}
           </div>
         </div>
