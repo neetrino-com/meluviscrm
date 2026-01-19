@@ -52,12 +52,12 @@ export default function ApartmentForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка создания');
+        throw new Error(errorData.error || 'Failed to create');
       }
 
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка создания');
+      setError(err instanceof Error ? err.message : 'Failed to create');
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function ApartmentForm({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">Создать квартиру</h2>
+        <h2 className="mb-4 text-xl font-bold">Create Apartment</h2>
 
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-3">
@@ -77,7 +77,7 @@ export default function ApartmentForm({
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Здание *
+              Building *
             </label>
             <select
               value={formData.buildingId}
@@ -97,7 +97,7 @@ export default function ApartmentForm({
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Номер квартиры *
+              Apartment No *
             </label>
             <input
               type="text"
@@ -113,7 +113,7 @@ export default function ApartmentForm({
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Тип квартиры
+              Apartment Type
             </label>
             <input
               type="number"
@@ -128,7 +128,7 @@ export default function ApartmentForm({
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Площадь (м²)
+                Area (m²)
               </label>
               <input
                 type="number"
@@ -142,7 +142,7 @@ export default function ApartmentForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Цена за м² (AMD)
+                Price per m² (AMD)
               </label>
               <input
                 type="number"
@@ -158,7 +158,7 @@ export default function ApartmentForm({
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Статус *
+              Status *
             </label>
             <select
               value={formData.status}
@@ -168,10 +168,10 @@ export default function ApartmentForm({
               required
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
-              <option value="UPCOMING">Предстоящая</option>
-              <option value="AVAILABLE">Доступна</option>
-              <option value="RESERVED">Зарезервирована</option>
-              <option value="SOLD">Продана</option>
+              <option value="UPCOMING">Upcoming</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="RESERVED">Reserved</option>
+              <option value="SOLD">Sold</option>
             </select>
           </div>
 
@@ -181,14 +181,14 @@ export default function ApartmentForm({
               onClick={onClose}
               className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
             >
-              Отмена
+              Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Создание...' : 'Создать'}
+              {loading ? 'Creating...' : 'Create'}
             </button>
           </div>
         </form>

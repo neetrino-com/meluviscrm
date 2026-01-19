@@ -47,22 +47,22 @@ export default function DistrictForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка сохранения');
+        throw new Error(errorData.error || 'Failed to save');
       }
 
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка сохранения');
+      setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
       setLoading(false);
     }
   };
 
-  // Автоматическая генерация slug из названия
+  // Auto-generate slug from name
   const handleNameChange = (value: string) => {
     setName(value);
     if (!district) {
-      // Генерируем slug только при создании
+      // Generate slug only when creating
       const autoSlug = value
         .toLowerCase()
         .trim()
@@ -76,7 +76,7 @@ export default function DistrictForm({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
         <h2 className="mb-4 text-xl font-bold">
-          {district ? 'Редактировать район' : 'Создать район'}
+          {district ? 'Edit District' : 'Create District'}
         </h2>
 
         {error && (
@@ -88,7 +88,7 @@ export default function DistrictForm({
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Название *
+              Name *
             </label>
             <input
               type="text"
@@ -113,7 +113,7 @@ export default function DistrictForm({
               placeholder="kentron"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Только строчные буквы, цифры и дефисы
+              Lowercase letters, numbers, and hyphens only
             </p>
           </div>
 
@@ -123,14 +123,14 @@ export default function DistrictForm({
               onClick={onClose}
               className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
             >
-              Отмена
+              Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Сохранение...' : district ? 'Сохранить' : 'Создать'}
+              {loading ? 'Saving...' : district ? 'Save' : 'Create'}
             </button>
           </div>
         </form>
