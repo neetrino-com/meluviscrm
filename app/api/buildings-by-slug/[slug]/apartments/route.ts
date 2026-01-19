@@ -63,7 +63,7 @@ export async function GET(
       total_price: apt.total_price,
       total_paid: apt.total_paid,
       balance: apt.balance,
-      building_id: apt.buildingId,
+      building_id: apt.building.id,
       building_slug: apt.building.slug,
       district_id: apt.building.district.id,
       district_slug: apt.building.district.slug,

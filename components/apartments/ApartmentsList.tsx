@@ -28,6 +28,13 @@ export default function ApartmentsList() {
   const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    total_pages: 0,
+  });
   const isAdmin = session?.user?.role === 'ADMIN';
 
   useEffect(() => {
@@ -36,9 +43,15 @@ export default function ApartmentsList() {
   }, []);
 
   useEffect(() => {
-    fetchApartments();
+    setCurrentPage(1); // Сбрасываем на первую страницу при изменении фильтров
+    fetchApartments(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBuilding, selectedStatus]);
+
+  useEffect(() => {
+    fetchApartments(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   const fetchDistricts = async () => {
     try {
@@ -64,20 +77,21 @@ export default function ApartmentsList() {
     }
   };
 
-  const fetchApartments = async () => {
+  const fetchApartments = async (page: number = 1) => {
     try {
       setLoading(true);
-      let url = '/api/apartments?';
+      let url = `/api/apartments?page=${page}&limit=50`;
       if (selectedBuilding) {
-        url += `buildingId=${selectedBuilding}&`;
+        url += `&buildingId=${selectedBuilding}`;
       }
       if (selectedStatus) {
-        url += `status=${selectedStatus}&`;
+        url += `&status=${selectedStatus}`;
       }
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load');
       const data = await response.json();
       setApartments(data.items || []);
+      setPagination(data.pagination || { page: 1, limit: 50, total: 0, total_pages: 0 });
     } catch (err) {
       setError('Failed to load apartments');
       console.error(err);
@@ -98,7 +112,7 @@ export default function ApartmentsList() {
         throw new Error('Failed to update status');
       }
 
-      fetchApartments();
+      fetchApartments(currentPage);
     } catch (err) {
       alert('Failed to update status');
       console.error(err);
@@ -135,7 +149,7 @@ export default function ApartmentsList() {
     }
   };
 
-  if (loading) {
+  if (loading && apartments.length === 0) {
     return <div className="text-center py-8">Loading...</div>;
   }
 
@@ -202,10 +216,17 @@ export default function ApartmentsList() {
           onClose={() => setShowForm(false)}
           onSuccess={() => {
             setShowForm(false);
-            fetchApartments();
+            fetchApartments(currentPage);
           }}
         />
       )}
+
+      <div className="mb-4 text-sm text-gray-600">
+        Showing {apartments.length} of {pagination.total} apartments
+        {pagination.total_pages > 1 && (
+          <span> (Page {pagination.page} of {pagination.total_pages})</span>
+        )}
+      </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
         <table className="min-w-full divide-y divide-gray-200">
@@ -297,6 +318,31 @@ export default function ApartmentsList() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {pagination.total_pages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Page {pagination.page} of {pagination.total_pages}
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(Math.min(pagination.total_pages, currentPage + 1))}
+              disabled={currentPage === pagination.total_pages}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

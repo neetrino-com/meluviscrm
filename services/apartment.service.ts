@@ -26,13 +26,34 @@ export const apartmentService = {
       where.status = filters.status;
     }
 
+    // Оптимизация: используем select вместо include для меньшего объёма данных
     const [apartments, total] = await Promise.all([
       prisma.apartment.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          buildingId: true,
+          apartmentNo: true,
+          apartmentType: true,
+          status: true,
+          sqm: true,
+          priceSqm: true,
+          totalPrice: true,
+          totalPaid: true,
+          createdAt: true,
+          updatedAt: true,
           building: {
-            include: {
-              district: true,
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              district: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
             },
           },
         },
