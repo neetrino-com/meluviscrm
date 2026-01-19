@@ -81,8 +81,10 @@ export async function PUT(
         : null;
     }
 
-    const apartment = await apartmentService.update(id, updateData);
-    return NextResponse.json(apartment);
+    await apartmentService.update(id, updateData);
+    // Получаем обновленную квартиру в правильном формате с пересчитанными полями
+    const updatedApartment = await apartmentService.getById(id);
+    return NextResponse.json(updatedApartment);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
