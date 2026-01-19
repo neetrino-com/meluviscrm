@@ -32,7 +32,7 @@ export default async function DashboardLayout({
                   href="/apartments"
                   className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
                 >
-                  Квартиры
+                  Apartments
                 </Link>
                 <Link
                   href="/dashboard"
@@ -46,13 +46,13 @@ export default async function DashboardLayout({
                       href="/admin/districts"
                       className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
                     >
-                      Районы
+                      Districts
                     </Link>
                     <Link
                       href="/admin/buildings"
                       className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
                     >
-                      Здания
+                      Buildings
                     </Link>
                   </>
                 )}
