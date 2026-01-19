@@ -337,12 +337,12 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
             <select
               value={apartment.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className={`badge border ${getStatusColor(apartment.status)} cursor-pointer text-base font-semibold appearance-none bg-right bg-no-repeat pr-10 pl-4 py-3 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              className={`badge border ${getStatusColor(apartment.status)} cursor-pointer text-lg font-bold appearance-none bg-right bg-no-repeat pr-12 pl-5 py-4 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6L8 10L12 6' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                backgroundPosition: 'right 1rem center',
-                paddingRight: '2.5rem',
-                minWidth: '140px',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                backgroundPosition: 'right 1.25rem center',
+                paddingRight: '3rem',
+                minWidth: '180px',
               }}
             >
               <option value="UPCOMING">Upcoming</option>
