@@ -98,15 +98,56 @@ export const apartmentService = {
   },
 
   async getById(id: number) {
+    // Оптимизация: используем select для загрузки только нужных полей
     const apartment = await prisma.apartment.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        buildingId: true,
+        apartmentNo: true,
+        apartmentType: true,
+        status: true,
+        sqm: true,
+        priceSqm: true,
+        totalPrice: true,
+        totalPaid: true,
+        dealDate: true,
+        ownershipName: true,
+        email: true,
+        passportTaxNo: true,
+        phone: true,
+        salesType: true,
+        dealDescription: true,
+        matterLink: true,
+        floorplanDistribution: true,
+        exteriorLink: true,
+        exteriorLink2: true,
+        createdAt: true,
+        updatedAt: true,
         building: {
-          include: {
-            district: true,
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            district: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
           },
         },
-        attachments: true,
+        attachments: {
+          select: {
+            id: true,
+            fileType: true,
+            fileUrl: true,
+            fileName: true,
+            fileSize: true,
+            createdAt: true,
+          },
+        },
       },
     });
 

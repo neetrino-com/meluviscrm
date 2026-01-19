@@ -33,7 +33,12 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(apartment);
+    // Кэширование на 30 секунд для оптимизации
+    return NextResponse.json(apartment, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('[API] Error fetching apartment:', error);
     return NextResponse.json(

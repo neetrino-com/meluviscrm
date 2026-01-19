@@ -71,7 +71,10 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
   const fetchApartment = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/apartments/${apartmentId}`);
+      // Кэширование на уровне браузера
+      const response = await fetch(`/api/apartments/${apartmentId}`, {
+        cache: 'default', // Используем стандартное кэширование браузера
+      });
       if (!response.ok) {
         if (response.status === 404) {
           router.push('/apartments');
