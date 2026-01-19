@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const page = searchParams.get('page');
     const limit = searchParams.get('limit');
+    const sortBy = searchParams.get('sortBy');
+    const sortOrder = searchParams.get('sortOrder');
 
     const filters = {
       buildingId: buildingId ? parseInt(buildingId) : undefined,
@@ -25,6 +27,8 @@ export async function GET(request: NextRequest) {
         : undefined,
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
+      sortBy: sortBy || undefined,
+      sortOrder: (sortOrder as 'asc' | 'desc') || undefined,
     };
 
     const result = await apartmentService.getAll(filters);

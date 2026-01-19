@@ -8,6 +8,8 @@ export const apartmentService = {
     status?: ApartmentStatus;
     page?: number;
     limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
     const page = filters?.page || 1;
     const limit = Math.min(filters?.limit || 50, 100);
@@ -24,6 +26,44 @@ export const apartmentService = {
 
     if (filters?.status) {
       where.status = filters.status;
+    }
+
+    // Определяем поле и порядок сортировки
+    const sortBy = filters?.sortBy || 'apartmentNo';
+    const sortOrder = filters?.sortOrder || 'asc';
+
+    // Маппинг полей для сортировки
+    let orderBy: any = {};
+    
+    switch (sortBy) {
+      case 'apartmentNo':
+        orderBy = { apartmentNo: sortOrder };
+        break;
+      case 'status':
+        orderBy = { status: sortOrder };
+        break;
+      case 'sqm':
+        orderBy = { sqm: sortOrder };
+        break;
+      case 'total_price':
+        // Сортировка по вычисляемому полю - используем totalPrice из БД
+        orderBy = { totalPrice: sortOrder };
+        break;
+      case 'total_paid':
+        orderBy = { totalPaid: sortOrder };
+        break;
+      case 'balance':
+        // Для balance используем сортировку по totalPrice и totalPaid
+        // Это приблизительная сортировка, точная требует вычисления
+        orderBy = { totalPrice: sortOrder };
+        break;
+      case 'building':
+        // Сортировка по зданию будет выполнена после получения данных
+        // Используем apartmentNo как временную сортировку
+        orderBy = { apartmentNo: 'asc' };
+        break;
+      default:
+        orderBy = { apartmentNo: 'asc' };
     }
 
     // Оптимизация: используем select вместо include для меньшего объёма данных
@@ -57,7 +97,7 @@ export const apartmentService = {
             },
           },
         },
-        orderBy: { apartmentNo: 'asc' },
+        orderBy,
         skip,
         take: limit,
       }),
@@ -65,7 +105,7 @@ export const apartmentService = {
     ]);
 
     // Вычисляемые поля
-    const apartmentsWithCalculations = apartments.map((apt) => {
+    let apartmentsWithCalculations = apartments.map((apt) => {
       const totalPrice =
         apt.sqm && apt.priceSqm
           ? Number(apt.sqm) * Number(apt.priceSqm)
@@ -85,6 +125,28 @@ export const apartmentService = {
         total_paid: apt.totalPaid ? Number(apt.totalPaid) : null,
       };
     });
+
+    // Если сортировка по balance, сортируем после вычисления
+    if (sortBy === 'balance') {
+      apartmentsWithCalculations.sort((a, b) => {
+        const balanceA = a.balance ?? 0;
+        const balanceB = b.balance ?? 0;
+        return sortOrder === 'asc' ? balanceA - balanceB : balanceB - balanceA;
+      });
+    }
+
+    // Если сортировка по building, сортируем по имени здания после получения данных
+    if (sortBy === 'building') {
+      apartmentsWithCalculations.sort((a, b) => {
+        const buildingA = `${a.building.district.name} - ${a.building.name}`;
+        const buildingB = `${b.building.district.name} - ${b.building.name}`;
+        if (sortOrder === 'asc') {
+          return buildingA.localeCompare(buildingB);
+        } else {
+          return buildingB.localeCompare(buildingA);
+        }
+      });
+    }
 
     return {
       items: apartmentsWithCalculations,

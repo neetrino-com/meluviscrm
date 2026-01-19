@@ -30,6 +30,8 @@ export default function ApartmentsList() {
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<string>('apartmentNo');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 50,
@@ -47,7 +49,7 @@ export default function ApartmentsList() {
     setCurrentPage(1);
     fetchApartments(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedBuilding, selectedStatus]);
+  }, [selectedBuilding, selectedStatus, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchApartments(currentPage);
@@ -81,7 +83,7 @@ export default function ApartmentsList() {
   const fetchApartments = async (page: number = 1) => {
     try {
       setLoading(true);
-      let url = `/api/apartments?page=${page}&limit=50`;
+      let url = `/api/apartments?page=${page}&limit=50&sortBy=${sortBy}&sortOrder=${sortOrder}`;
       if (selectedBuilding) {
         url += `&buildingId=${selectedBuilding}`;
       }
@@ -99,6 +101,39 @@ export default function ApartmentsList() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      // Переключаем порядок сортировки
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Устанавливаем новое поле сортировки
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+    setCurrentPage(1); // Сбрасываем на первую страницу при изменении сортировки
+  };
+
+  const SortableHeader = ({ field, label, align = 'left' }: { field: string; label: string; align?: 'left' | 'right' }) => {
+    const isActive = sortBy === field;
+    return (
+      <th
+        className={`px-6 py-3 text-${align} text-xs font-medium uppercase tracking-wider text-gray-500 cursor-pointer select-none hover:bg-gray-100 transition-colors`}
+        onClick={() => handleSort(field)}
+      >
+        <div className="flex items-center gap-1">
+          <span>{label}</span>
+          <span className="text-gray-400">
+            {isActive ? (
+              sortOrder === 'asc' ? '↑' : '↓'
+            ) : (
+              <span className="text-gray-300">⇅</span>
+            )}
+          </span>
+        </div>
+      </th>
+    );
   };
 
   const handleStatusChange = async (id: number, newStatus: string) => {
@@ -356,27 +391,13 @@ export default function ApartmentsList() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    No
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Building
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Area (m²)
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Paid
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Balance
-                  </th>
+                  <SortableHeader field="apartmentNo" label="No" />
+                  <SortableHeader field="building" label="Building" />
+                  <SortableHeader field="status" label="Status" />
+                  <SortableHeader field="sqm" label="Area (m²)" />
+                  <SortableHeader field="total_price" label="Price" align="right" />
+                  <SortableHeader field="total_paid" label="Paid" align="right" />
+                  <SortableHeader field="balance" label="Balance" align="right" />
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                     Actions
                   </th>
