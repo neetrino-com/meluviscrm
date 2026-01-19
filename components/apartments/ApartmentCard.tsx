@@ -92,20 +92,43 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
 
   const handleSave = async () => {
     try {
+      // Преобразуем данные из snake_case в camelCase для API
+      const apiData: any = {};
+      
+      if (formData.sqm !== undefined) apiData.sqm = formData.sqm;
+      if (formData.price_sqm !== undefined) apiData.priceSqm = formData.price_sqm;
+      if (formData.total_paid !== undefined) apiData.totalPaid = formData.total_paid;
+      if (formData.dealDate !== undefined) apiData.dealDate = formData.dealDate || null;
+      if (formData.ownershipName !== undefined) apiData.ownershipName = formData.ownershipName || null;
+      if (formData.email !== undefined) apiData.email = formData.email || null;
+      if (formData.passportTaxNo !== undefined) apiData.passportTaxNo = formData.passportTaxNo || null;
+      if (formData.phone !== undefined) apiData.phone = formData.phone || null;
+      if (formData.salesType !== undefined) apiData.salesType = formData.salesType;
+      if (formData.dealDescription !== undefined) apiData.dealDescription = formData.dealDescription || null;
+      if (formData.matterLink !== undefined) apiData.matterLink = formData.matterLink || null;
+      if (formData.floorplanDistribution !== undefined) apiData.floorplanDistribution = formData.floorplanDistribution || null;
+      if (formData.exteriorLink !== undefined) apiData.exteriorLink = formData.exteriorLink || null;
+      if (formData.exteriorLink2 !== undefined) apiData.exteriorLink2 = formData.exteriorLink2 || null;
+
       const response = await fetch(`/api/apartments/${apartmentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(apiData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to save');
+        console.error('API Error:', error);
+        const errorMessage = error.details 
+          ? `${error.error}: ${JSON.stringify(error.details)}`
+          : error.error || 'Failed to save';
+        throw new Error(errorMessage);
       }
 
       setEditing(false);
       fetchApartment();
     } catch (err) {
+      console.error('Save error:', err);
       alert(err instanceof Error ? err.message : 'Failed to save');
     }
   };

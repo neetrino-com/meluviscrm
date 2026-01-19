@@ -59,7 +59,7 @@ export const updateApartmentSchema = z.object({
   status: apartmentStatusSchema.optional(),
   dealDate: z.string().date().optional().nullable(),
   ownershipName: z.string().max(500).optional().nullable(),
-  email: z.string().email('Некорректный email').optional().nullable(),
+  email: z.string().email('Invalid email').optional().nullable().or(z.literal('').transform(() => null)),
   passportTaxNo: z.string().max(100).optional().nullable(),
   phone: z.string().max(50).optional().nullable(),
   sqm: z.number().positive().optional().nullable(),
@@ -67,10 +67,10 @@ export const updateApartmentSchema = z.object({
   salesType: salesTypeSchema.optional(),
   totalPaid: z.number().min(0).optional().nullable(),
   dealDescription: z.string().max(500).optional().nullable(),
-  matterLink: z.string().url('Некорректный URL').optional().nullable(),
-  floorplanDistribution: z.string().max(500).optional().nullable(),
-  exteriorLink: z.string().url('Некорректный URL').optional().nullable(),
-  exteriorLink2: z.string().url('Некорректный URL').optional().nullable(),
+  matterLink: z.string().url('Invalid URL').optional().nullable().or(z.literal('').transform(() => null)),
+  floorplanDistribution: z.string().max(500).optional().nullable().or(z.literal('').transform(() => null)),
+  exteriorLink: z.string().url('Invalid URL').optional().nullable().or(z.literal('').transform(() => null)),
+  exteriorLink2: z.string().url('Invalid URL').optional().nullable().or(z.literal('').transform(() => null)),
 });
 
 export const updateApartmentStatusSchema = z.object({
