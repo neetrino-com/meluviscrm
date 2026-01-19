@@ -94,77 +94,75 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
     try {
       const apiData: any = {};
       
+      // Вспомогательная функция для преобразования числа
+      const parseNumber = (value: any): number | null => {
+        if (value === null || value === undefined || value === '') return null;
+        const num = typeof value === 'string' ? parseFloat(value) : value;
+        return isNaN(num) ? null : num;
+      };
+      
+      // Вспомогательная функция для преобразования строки
+      const parseString = (value: any): string | null => {
+        if (value === null || value === undefined) return null;
+        const str = String(value).trim();
+        return str === '' ? null : str;
+      };
+      
       // Числовые поля - преобразуем в число или null (0 тоже становится null для sqm и priceSqm)
       if (formData.sqm !== undefined) {
-        const sqmNum = typeof formData.sqm === 'string' ? parseFloat(formData.sqm) : formData.sqm;
-        apiData.sqm = sqmNum === null || sqmNum === 0 || isNaN(sqmNum) ? null : sqmNum;
+        const sqmNum = parseNumber(formData.sqm);
+        // Для sqm и priceSqm: отправляем null если значение 0, null или пустое, иначе положительное число
+        apiData.sqm = (sqmNum === null || sqmNum === 0) ? null : sqmNum;
       }
       if (formData.price_sqm !== undefined) {
-        const priceSqmNum = typeof formData.price_sqm === 'string' ? parseFloat(formData.price_sqm) : formData.price_sqm;
-        apiData.priceSqm = priceSqmNum === null || priceSqmNum === 0 || isNaN(priceSqmNum) ? null : priceSqmNum;
+        const priceSqmNum = parseNumber(formData.price_sqm);
+        apiData.priceSqm = (priceSqmNum === null || priceSqmNum === 0) ? null : priceSqmNum;
       }
       if (formData.total_paid !== undefined) {
-        const totalPaidNum = typeof formData.total_paid === 'string' ? parseFloat(formData.total_paid) : formData.total_paid;
-        apiData.totalPaid = totalPaidNum === null || isNaN(totalPaidNum) ? null : totalPaidNum;
+        const totalPaidNum = parseNumber(formData.total_paid);
+        apiData.totalPaid = totalPaidNum;
       }
       
       // Дата - преобразуем пустую строку в null
       if (formData.dealDate !== undefined) {
-        apiData.dealDate = formData.dealDate && formData.dealDate.trim() !== '' 
-          ? formData.dealDate 
-          : null;
+        const dateStr = parseString(formData.dealDate);
+        apiData.dealDate = dateStr;
       }
       
       // Текстовые поля - преобразуем пустые строки в null
       if (formData.ownershipName !== undefined) {
-        apiData.ownershipName = formData.ownershipName && formData.ownershipName.trim() !== '' 
-          ? formData.ownershipName 
-          : null;
+        apiData.ownershipName = parseString(formData.ownershipName);
       }
       if (formData.email !== undefined) {
-        apiData.email = formData.email && formData.email.trim() !== '' 
-          ? formData.email 
-          : null;
+        apiData.email = parseString(formData.email);
       }
       if (formData.phone !== undefined) {
-        apiData.phone = formData.phone && formData.phone.trim() !== '' 
-          ? formData.phone 
-          : null;
+        apiData.phone = parseString(formData.phone);
       }
       if (formData.passportTaxNo !== undefined) {
-        apiData.passportTaxNo = formData.passportTaxNo && formData.passportTaxNo.trim() !== '' 
-          ? formData.passportTaxNo 
-          : null;
+        apiData.passportTaxNo = parseString(formData.passportTaxNo);
       }
       if (formData.salesType !== undefined) {
         apiData.salesType = formData.salesType;
       }
       if (formData.dealDescription !== undefined) {
-        apiData.dealDescription = formData.dealDescription && formData.dealDescription.trim() !== '' 
-          ? formData.dealDescription 
-          : null;
+        apiData.dealDescription = parseString(formData.dealDescription);
       }
       if (formData.matterLink !== undefined) {
-        apiData.matterLink = formData.matterLink && formData.matterLink.trim() !== '' 
-          ? formData.matterLink 
-          : null;
+        apiData.matterLink = parseString(formData.matterLink);
       }
       if (formData.exteriorLink !== undefined) {
-        apiData.exteriorLink = formData.exteriorLink && formData.exteriorLink.trim() !== '' 
-          ? formData.exteriorLink 
-          : null;
+        apiData.exteriorLink = parseString(formData.exteriorLink);
       }
       if (formData.exteriorLink2 !== undefined) {
-        apiData.exteriorLink2 = formData.exteriorLink2 && formData.exteriorLink2.trim() !== '' 
-          ? formData.exteriorLink2 
-          : null;
+        apiData.exteriorLink2 = parseString(formData.exteriorLink2);
       }
       if (formData.floorplanDistribution !== undefined) {
-        apiData.floorplanDistribution = formData.floorplanDistribution && formData.floorplanDistribution.trim() !== '' 
-          ? formData.floorplanDistribution 
-          : null;
+        apiData.floorplanDistribution = parseString(formData.floorplanDistribution);
       }
 
+      console.log('Sending data to API:', JSON.stringify(apiData, null, 2));
+      
       const response = await fetch(`/api/apartments/${apartmentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -174,6 +172,13 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
+        if (errorData.details && Array.isArray(errorData.details)) {
+          console.error('Validation details:', errorData.details);
+          const errorMessages = errorData.details.map((err: any) => 
+            `${err.path.join('.')}: ${err.message}`
+          ).join(', ');
+          throw new Error(`Validation error: ${errorMessages}`);
+        }
         throw new Error(errorData.error || 'Failed to save');
       }
 

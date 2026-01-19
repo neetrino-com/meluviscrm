@@ -62,16 +62,8 @@ export const updateApartmentSchema = z.object({
   email: z.string().email('Invalid email').optional().nullable().or(z.literal('').transform(() => null)),
   passportTaxNo: z.string().max(100).optional().nullable().or(z.literal('').transform(() => null)),
   phone: z.string().max(50).optional().nullable().or(z.literal('').transform(() => null)),
-  sqm: z.union([
-    z.number().positive(),
-    z.number().nonnegative().transform((val) => val === 0 ? null : val),
-    z.null(),
-  ]).optional().nullable(),
-  priceSqm: z.union([
-    z.number().positive(),
-    z.number().nonnegative().transform((val) => val === 0 ? null : val),
-    z.null(),
-  ]).optional().nullable(),
+  sqm: z.union([z.number().positive(), z.null()]).optional(),
+  priceSqm: z.union([z.number().positive(), z.null()]).optional(),
   salesType: salesTypeSchema.optional(),
   totalPaid: z.number().min(0).optional().nullable(),
   dealDescription: z.string().max(500).optional().nullable().or(z.literal('').transform(() => null)),
