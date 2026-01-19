@@ -66,11 +66,17 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apartmentId]);
 
-  const fetchApartment = async () => {
+  const fetchApartment = async (skipCache = false) => {
     try {
+      // При обновлении после загрузки файла не используем кэш
+      // Добавляем timestamp к URL для обхода кэша
+      const url = skipCache 
+        ? `/api/apartments/${apartmentId}?t=${Date.now()}`
+        : `/api/apartments/${apartmentId}`;
+      
       setLoading(true);
-      const response = await fetch(`/api/apartments/${apartmentId}`, {
-        cache: 'default',
+      const response = await fetch(url, {
+        cache: skipCache ? 'no-store' : 'default',
       });
       if (!response.ok) {
         if (response.status === 404) {
@@ -88,6 +94,11 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Функция для обновления после загрузки файла (без кэша)
+  const refreshAfterUpload = async () => {
+    await fetchApartment(true);
   };
 
   const handleSave = async () => {
@@ -612,7 +623,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                       images_files: [],
                       progress_images_files: [],
                     }}
-                    onUploadSuccess={fetchApartment}
+                    onUploadSuccess={refreshAfterUpload}
                     fileTypeOnly="AGREEMENT"
                   />
                 </div>
@@ -704,7 +715,7 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
                       images_files: [],
                       progress_images_files: [],
                     }}
-                    onUploadSuccess={fetchApartment}
+                    onUploadSuccess={refreshAfterUpload}
                     fileTypeOnly="AGREEMENT"
                   />
                 </div>

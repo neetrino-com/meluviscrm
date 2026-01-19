@@ -60,8 +60,13 @@ export default function FileUpload({
         throw new Error(error.error || 'Failed to upload file');
       }
 
-      onUploadSuccess();
-      e.target.value = ''; // Сброс input
+      const uploadedFile = await response.json();
+      
+      // Сбрасываем input сразу после успешной загрузки
+      e.target.value = '';
+      
+      // Обновляем данные с сервера (без кэша для получения свежих данных)
+      await onUploadSuccess();
     } catch (err) {
       setUploadError((prev) => ({
         ...prev,
