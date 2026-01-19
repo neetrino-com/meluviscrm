@@ -62,11 +62,12 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
   const [formData, setFormData] = useState<Partial<Apartment>>({});
 
   useEffect(() => {
-    fetchApartment();
+    // При загрузке страницы всегда обновляем без кэша для получения актуальных данных
+    fetchApartment(true, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apartmentId]);
 
-  const fetchApartment = async (skipCache = false) => {
+  const fetchApartment = async (skipCache = false, showLoading = true) => {
     try {
       // При обновлении после загрузки файла не используем кэш
       // Добавляем timestamp к URL для обхода кэша
@@ -74,7 +75,9 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
         ? `/api/apartments/${apartmentId}?t=${Date.now()}`
         : `/api/apartments/${apartmentId}`;
       
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const response = await fetch(url, {
         cache: skipCache ? 'no-store' : 'default',
       });
@@ -92,7 +95,9 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
       setError('Failed to load apartment');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -239,11 +244,19 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
       if (!response.ok) throw new Error('Failed to update status');
 
       const updated = await response.json();
-      // Обновляем статус сразу
-      setApartment({ ...apartment!, status: updated.status.toUpperCase() });
+      // Обновляем статус сразу без перезагрузки страницы
+      setApartment({ ...apartment!, status: newStatus });
       
-      // Обновляем данные с сервера без кэша для получения актуальной информации
-      await fetchApartment(true);
+      // Обновляем данные с сервера без кэша, но без показа loading
+      const url = `/api/apartments/${apartmentId}?t=${Date.now()}`;
+      const refreshResponse = await fetch(url, {
+        cache: 'no-store',
+      });
+      if (refreshResponse.ok) {
+        const refreshedData = await refreshResponse.json();
+        setApartment(refreshedData);
+        setFormData(refreshedData);
+      }
     } catch (err) {
       console.error('Status update error:', err);
       alert('Failed to update status');
