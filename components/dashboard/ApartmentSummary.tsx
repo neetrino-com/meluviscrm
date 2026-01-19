@@ -56,17 +56,22 @@ export default function ApartmentSummary() {
 
   return (
     <div className="card p-6">
-      <h2 className="mb-6 text-xl font-semibold text-gray-900">Apartment Summary</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-gray-900">Apartment Summary</h2>
+      </div>
       
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
-          <div key={stat.label} className={`rounded-lg border p-4 ${stat.color}`}>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide opacity-70">
+          <div 
+            key={stat.label} 
+            className={`rounded-xl border-2 p-5 transition-all duration-200 hover:shadow-lg ${stat.color}`}
+          >
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide opacity-80">
               {stat.label}
             </p>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold">{stat.count}</p>
-              <p className="text-sm opacity-80">{stat.sqm.toFixed(0)} m²</p>
+            <div className="space-y-2">
+              <p className="text-3xl font-bold">{stat.count}</p>
+              <p className="text-sm font-medium opacity-90">{stat.sqm.toFixed(0)} m²</p>
             </div>
           </div>
         ))}

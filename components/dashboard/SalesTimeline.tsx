@@ -1,6 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 type TimelineData = {
   month: string;
@@ -32,9 +44,9 @@ export default function SalesTimeline() {
   if (loading) {
     return (
       <div className="card p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Sales Timeline</h2>
-        <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+        <h2 className="mb-6 text-xl font-semibold text-gray-900">Sales Timeline by Month</h2>
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
         </div>
       </div>
     );
@@ -43,7 +55,7 @@ export default function SalesTimeline() {
   const formatMonth = (month: string) => {
     const [year, monthNum] = month.split('-');
     const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
 
   const formatAmount = (amount: number) => {
@@ -52,6 +64,12 @@ export default function SalesTimeline() {
     }
     return `${(amount / 1000).toFixed(0)}K AMD`;
   };
+
+  const chartData = data.map((item) => ({
+    month: formatMonth(item.month),
+    'Deals Count': item.count,
+    'Amount (M AMD)': (item.amount / 1000000).toFixed(1),
+  }));
 
   return (
     <div className="card p-6">
@@ -62,12 +80,74 @@ export default function SalesTimeline() {
           No sales data available
         </div>
       ) : (
-        <div className="space-y-4">
-          {/* Chart placeholder */}
-          <div className="flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-12">
-            <p className="text-sm text-gray-500">
-              Chart will be displayed here (chart library can be added later)
-            </p>
+        <div className="space-y-6">
+          {/* Bar Chart - Deals Count */}
+          <div>
+            <h3 className="mb-4 text-sm font-medium text-gray-700">Number of Deals</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <YAxis 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                  }}
+                />
+                <Bar 
+                  dataKey="Deals Count" 
+                  fill="#3b82f6" 
+                  radius={[8, 8, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Line Chart - Amount */}
+          <div>
+            <h3 className="mb-4 text-sm font-medium text-gray-700">Sales Amount</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <YAxis 
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.5rem',
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="Amount (M AMD)" 
+                  stroke="#10b981" 
+                  strokeWidth={3}
+                  dot={{ fill: '#10b981', r: 5 }}
+                  activeDot={{ r: 7 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
           {/* Data table */}
@@ -88,7 +168,7 @@ export default function SalesTimeline() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {data.map((item) => (
-                  <tr key={item.month} className="hover:bg-gray-50">
+                  <tr key={item.month} className="hover:bg-gray-50 transition-colors">
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                       {formatMonth(item.month)}
                     </td>
