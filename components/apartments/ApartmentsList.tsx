@@ -319,24 +319,111 @@ export default function ApartmentsList() {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination with page numbers */}
       {pagination.total_pages > 1 && (
         <div className="mt-4 flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Page {pagination.page} of {pagination.total_pages}
+            Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+            {pagination.total} apartments
           </div>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
+
+            {/* Page numbers */}
+            <div className="flex space-x-1">
+              {(() => {
+                const pages = [];
+                const totalPages = pagination.total_pages;
+                const current = pagination.page;
+                
+                // Показываем максимум 7 страниц вокруг текущей
+                let startPage = Math.max(1, current - 3);
+                let endPage = Math.min(totalPages, current + 3);
+                
+                // Если в начале, показываем первые страницы
+                if (current <= 4) {
+                  startPage = 1;
+                  endPage = Math.min(7, totalPages);
+                }
+                
+                // Если в конце, показываем последние страницы
+                if (current >= totalPages - 3) {
+                  startPage = Math.max(1, totalPages - 6);
+                  endPage = totalPages;
+                }
+                
+                // Первая страница
+                if (startPage > 1) {
+                  pages.push(
+                    <button
+                      key={1}
+                      onClick={() => setCurrentPage(1)}
+                      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      1
+                    </button>
+                  );
+                  if (startPage > 2) {
+                    pages.push(
+                      <span key="ellipsis-start" className="px-2 text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                }
+                
+                // Страницы вокруг текущей
+                for (let i = startPage; i <= endPage; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i)}
+                      className={`rounded-md border px-3 py-2 text-sm font-medium ${
+                        i === current
+                          ? 'border-blue-500 bg-blue-50 text-blue-600'
+                          : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                
+                // Последняя страница
+                if (endPage < totalPages) {
+                  if (endPage < totalPages - 1) {
+                    pages.push(
+                      <span key="ellipsis-end" className="px-2 text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                  pages.push(
+                    <button
+                      key={totalPages}
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      {totalPages}
+                    </button>
+                  );
+                }
+                
+                return pages;
+              })()}
+            </div>
+
             <button
               onClick={() => setCurrentPage(Math.min(pagination.total_pages, currentPage + 1))}
               disabled={currentPage === pagination.total_pages}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
