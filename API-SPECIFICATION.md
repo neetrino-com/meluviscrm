@@ -95,7 +95,9 @@ curl -X GET https://your-domain.vercel.app/api/districts \
 
 ## Endpoint 2: Получить список зданий по району
 
-### `GET /api/districts/{district_slug}/buildings`
+### `GET /api/districts-by-slug/{district_slug}/buildings`
+
+**Примечание:** Из-за ограничений Next.js роутинга используется путь `/api/districts-by-slug/{slug}/buildings` вместо `/api/districts/{slug}/buildings`
 
 Получить список всех зданий в указанном районе.
 
@@ -108,7 +110,7 @@ curl -X GET https://your-domain.vercel.app/api/districts \
 
 **Пример запроса:**
 ```bash
-curl -X GET https://your-domain.vercel.app/api/districts/kentron/buildings \
+curl -X GET https://your-domain.vercel.app/api/districts-by-slug/kentron/buildings \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 ```
 
@@ -153,7 +155,9 @@ curl -X GET https://your-domain.vercel.app/api/districts/kentron/buildings \
 
 ## Endpoint 3: Получить список квартир по зданию
 
-### `GET /api/buildings/{building_slug}/apartments`
+### `GET /api/buildings-by-slug/{building_slug}/apartments`
+
+**Примечание:** Из-за ограничений Next.js роутинга используется путь `/api/buildings-by-slug/{slug}/apartments` вместо `/api/buildings/{slug}/apartments`
 
 Получить список всех квартир в указанном здании.
 
@@ -170,15 +174,15 @@ curl -X GET https://your-domain.vercel.app/api/districts/kentron/buildings \
 **Пример запроса:**
 ```bash
 # Все квартиры
-curl -X GET https://your-domain.vercel.app/api/buildings/tower-1/apartments \
+curl -X GET https://your-domain.vercel.app/api/buildings-by-slug/tower-1/apartments \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 
 # Только доступные
-curl -X GET https://your-domain.vercel.app/api/buildings/tower-1/apartments?status=available \
+curl -X GET https://your-domain.vercel.app/api/buildings-by-slug/tower-1/apartments?status=available \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 
 # С пагинацией
-curl -X GET https://your-domain.vercel.app/api/buildings/tower-1/apartments?page=1&limit=20 \
+curl -X GET https://your-domain.vercel.app/api/buildings-by-slug/tower-1/apartments?page=1&limit=20 \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 ```
 
@@ -262,7 +266,9 @@ curl -X GET https://your-domain.vercel.app/api/buildings/tower-1/apartments?page
 
 ## Endpoint 4: Получить детали квартиры
 
-### `GET /api/apartments/{id}`
+### `GET /api/external/apartments/{id}`
+
+**Примечание:** Для внешнего API используется путь `/api/external/apartments/{id}` для отличия от внутреннего API
 
 Получить полную информацию о квартире, включая все поля сделки.
 
@@ -275,7 +281,7 @@ curl -X GET https://your-domain.vercel.app/api/buildings/tower-1/apartments?page
 
 **Пример запроса:**
 ```bash
-curl -X GET https://your-domain.vercel.app/api/apartments/501 \
+curl -X GET https://your-domain.vercel.app/api/external/apartments/501 \
   -H "Authorization: Bearer YOUR_API_TOKEN"
 ```
 
@@ -378,6 +384,8 @@ curl -X PUT https://your-domain.vercel.app/api/apartments/501/status \
   -d '{"status": "reserved"}'
 ```
 
+**Примечание:** Этот endpoint использует стандартный путь `/api/apartments/{id}/status`
+
 **Пример ответа:**
 ```json
 {
@@ -386,6 +394,8 @@ curl -X PUT https://your-domain.vercel.app/api/apartments/501/status \
   "updated_at": "2026-01-19T10:12:00Z"
 }
 ```
+
+**Примечание:** Статус возвращается в верхнем регистре (RESERVED), но принимается в любом регистре
 
 **Поля ответа:**
 - `id` (number) - ID квартиры
@@ -444,15 +454,15 @@ curl https://your-domain.vercel.app/api/districts \
   -H "Authorization: Bearer test_api_token_12345"
 
 # 2. Получить здания в районе "kentron"
-curl https://your-domain.vercel.app/api/districts/kentron/buildings \
+curl https://your-domain.vercel.app/api/districts-by-slug/kentron/buildings \
   -H "Authorization: Bearer test_api_token_12345"
 
 # 3. Получить квартиры в здании "tower-1"
-curl https://your-domain.vercel.app/api/buildings/tower-1/apartments?status=available \
+curl https://your-domain.vercel.app/api/buildings-by-slug/tower-1/apartments?status=available \
   -H "Authorization: Bearer test_api_token_12345"
 
 # 4. Получить детали квартиры 501
-curl https://your-domain.vercel.app/api/apartments/501 \
+curl https://your-domain.vercel.app/api/external/apartments/501 \
   -H "Authorization: Bearer test_api_token_12345"
 
 # 5. Изменить статус квартиры 501 на "reserved"

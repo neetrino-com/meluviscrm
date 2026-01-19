@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          UserRole @default(SALES)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  SALES
+}
+
+// Districts table
+model District {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  buildings Building[]
+
+  @@map("districts")
+}
+
+// Buildings table
+model Building {
+  id         Int      @id @default(autoincrement())
+  districtId Int      @map("district_id")
+  name       String
+  slug       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  district   District    @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  apartments Apartment[]
+
+  @@unique([districtId, slug])
+  @@map("buildings")
+}
+
+// Apartments table (все 24 поля из ТЗ)
+model Apartment {
+  id                    Int           @id @default(autoincrement())
+  buildingId            Int           @map("building_id")
+  apartmentNo           String        @map("apartment_no")
+  apartmentType         Int?          @map("apartment_type")
+  status                ApartmentStatus @default(UPCOMING)
+  dealDate              DateTime?     @map("deal_date") @db.Date
+  ownershipName         String?       @map("ownership_name") @db.Text
+  email                 String?
+  passportTaxNo         String?       @map("passport_tax_no")
+  phone                 String?
+  sqm                   Decimal?      @db.Decimal(10, 2)
+  priceSqm              Decimal?      @map("price_sqm") @db.Decimal(12, 2)
+  totalPrice            Decimal?      @map("total_price") @db.Decimal(12, 2)
+  salesType             SalesType    @default(UNSOLD) @map("sales_type")
+  totalPaid             Decimal?      @default(0) @map("total_paid") @db.Decimal(12, 2)
+  dealDescription       String?       @map("deal_description") @db.Text
+  matterLink            String?       @map("matter_link") @db.Text
+  floorplanDistribution String?       @map("floorplan_distribution") @db.Text
+  exteriorLink          String?       @map("exterior_link") @db.Text
+  exteriorLink2         String?       @map("exterior_link2") @db.Text
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  building    Building              @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  attachments ApartmentAttachment[]
+
+  @@unique([buildingId, apartmentNo])
+  @@map("apartments")
+}
+
+enum ApartmentStatus {
+  UPCOMING
+  AVAILABLE
+  RESERVED
+  SOLD
+}
+
+enum SalesType {
+  UNSOLD
+  MORTGAGE
+  CASH
+  TIMEBASED
+}
+
+// Apartment Attachments table
+model ApartmentAttachment {
+  id          Int      @id @default(autoincrement())
+  apartmentId Int      @map("apartment_id")
+  fileType    FileType @map("file_type")
+  fileUrl     String   @map("file_url") @db.Text
+  fileName    String?  @map("file_name")
+  fileSize    Int?     @map("file_size")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  apartment Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@map("apartment_attachments")
+}
+
+enum FileType {
+  AGREEMENT
+  FLOORPLAN
+  IMAGE
+  PROGRESS_IMAGE
+}

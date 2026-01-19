@@ -1,0 +1,82 @@
+import { z } from 'zod';
+
+// Slug validation: lowercase, kebab-case, no special chars
+const slugSchema = z
+  .string()
+  .min(1, 'Slug не может быть пустым')
+  .max(255, 'Slug слишком длинный')
+  .regex(
+    /^[a-z0-9-]+$/,
+    'Slug может содержать только строчные буквы, цифры и дефисы'
+  )
+  .transform((val) => val.toLowerCase().trim().replace(/\s+/g, '-'));
+
+export const createDistrictSchema = z.object({
+  name: z.string().min(1, 'Название обязательно').max(255),
+  slug: slugSchema,
+});
+
+export const updateDistrictSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  slug: slugSchema.optional(),
+});
+
+export const createBuildingSchema = z.object({
+  districtId: z.number().int().positive('ID района должен быть положительным'),
+  name: z.string().min(1, 'Название обязательно').max(255),
+  slug: slugSchema,
+});
+
+export const updateBuildingSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  slug: slugSchema.optional(),
+  districtId: z.number().int().positive().optional(),
+});
+
+// Apartment schemas
+const apartmentStatusSchema = z.enum([
+  'UPCOMING',
+  'AVAILABLE',
+  'RESERVED',
+  'SOLD',
+]);
+
+const salesTypeSchema = z.enum(['UNSOLD', 'MORTGAGE', 'CASH', 'TIMEBASED']);
+
+export const createApartmentSchema = z.object({
+  buildingId: z.number().int().positive('ID здания должен быть положительным'),
+  apartmentNo: z.string().min(1, 'Номер квартиры обязателен').max(50),
+  apartmentType: z.number().int().optional(),
+  sqm: z.number().positive().optional(),
+  priceSqm: z.number().positive().optional(),
+  status: apartmentStatusSchema.optional(),
+});
+
+export const updateApartmentSchema = z.object({
+  buildingId: z.number().int().positive().optional(),
+  apartmentNo: z.string().min(1).max(50).optional(),
+  apartmentType: z.number().int().optional(),
+  status: apartmentStatusSchema.optional(),
+  dealDate: z.string().date().optional().nullable(),
+  ownershipName: z.string().max(500).optional().nullable(),
+  email: z.string().email('Некорректный email').optional().nullable(),
+  passportTaxNo: z.string().max(100).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  sqm: z.number().positive().optional().nullable(),
+  priceSqm: z.number().positive().optional().nullable(),
+  salesType: salesTypeSchema.optional(),
+  totalPaid: z.number().min(0).optional().nullable(),
+  dealDescription: z.string().max(500).optional().nullable(),
+  matterLink: z.string().url('Некорректный URL').optional().nullable(),
+  floorplanDistribution: z.string().max(500).optional().nullable(),
+  exteriorLink: z.string().url('Некорректный URL').optional().nullable(),
+  exteriorLink2: z.string().url('Некорректный URL').optional().nullable(),
+});
+
+export const updateApartmentStatusSchema = z.object({
+  status: apartmentStatusSchema.or(
+    z.enum(['upcoming', 'available', 'reserved', 'sold']).transform((val) =>
+      val.toUpperCase() as 'UPCOMING' | 'AVAILABLE' | 'RESERVED' | 'SOLD'
+    )
+  ),
+});

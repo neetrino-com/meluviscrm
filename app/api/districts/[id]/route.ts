@@ -1,0 +1,129 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { districtService } from '@/services/district.service';
+import { updateDistrictSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid district ID' },
+        { status: 400 }
+      );
+    }
+
+    const district = await districtService.getById(id);
+
+    if (!district) {
+      return NextResponse.json(
+        { error: 'District not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(district);
+  } catch (error) {
+    console.error('[API] Error fetching district:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid district ID' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const validatedData = updateDistrictSchema.parse(body);
+
+    const district = await districtService.update(id, validatedData);
+    return NextResponse.json(district);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json(
+        { error: 'Район с таким slug уже существует' },
+        { status: 409 }
+      );
+    }
+
+    console.error('[API] Error updating district:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid district ID' },
+        { status: 400 }
+      );
+    }
+
+    await districtService.delete(id);
+    return NextResponse.json({ message: 'District deleted' }, { status: 200 });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('зданий')) {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
+    }
+
+    console.error('[API] Error deleting district:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

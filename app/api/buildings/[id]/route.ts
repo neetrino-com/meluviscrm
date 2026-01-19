@@ -1,0 +1,134 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { buildingService } from '@/services/building.service';
+import { updateBuildingSchema } from '@/lib/validations';
+import { z } from 'zod';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid building ID' },
+        { status: 400 }
+      );
+    }
+
+    const building = await buildingService.getById(id);
+
+    if (!building) {
+      return NextResponse.json(
+        { error: 'Building not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(building);
+  } catch (error) {
+    console.error('[API] Error fetching building:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid building ID' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const validatedData = updateBuildingSchema.parse(body);
+
+    const building = await buildingService.update(id, validatedData);
+    return NextResponse.json(building);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof Error) {
+      if (error.message.includes('не найден')) {
+        return NextResponse.json({ error: error.message }, { status: 404 });
+      }
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'Здание с таким slug уже существует в этом районе' },
+          { status: 409 }
+        );
+      }
+    }
+
+    console.error('[API] Error updating building:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session || session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { error: 'Invalid building ID' },
+        { status: 400 }
+      );
+    }
+
+    await buildingService.delete(id);
+    return NextResponse.json({ message: 'Building deleted' }, { status: 200 });
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('квартир')) {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
+    }
+
+    console.error('[API] Error deleting building:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
