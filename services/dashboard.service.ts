@@ -69,9 +69,16 @@ export const dashboardService = {
     let totalSoldPaid = 0;
 
     for (const apt of soldApartments) {
+      // Calculate totalPrice: use from DB if exists, otherwise calculate from sqm * priceSqm
+      let apartmentTotalPrice = 0;
       if (apt.totalPrice) {
-        totalSoldAmount += Number(apt.totalPrice);
+        apartmentTotalPrice = Number(apt.totalPrice);
+      } else if (apt.sqm && apt.priceSqm) {
+        apartmentTotalPrice = Number(apt.sqm) * Number(apt.priceSqm);
       }
+      
+      totalSoldAmount += apartmentTotalPrice;
+      
       if (apt.totalPaid) {
         totalSoldPaid += Number(apt.totalPaid);
       }
