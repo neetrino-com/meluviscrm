@@ -39,15 +39,21 @@ export async function GET(
 
     // Формат для внешнего API (с id и slug для district)
     if (authHeader && apiToken) {
-      const formatted = buildings.map((b: any) => ({
-        id: b.id,
-        slug: b.slug,
-        name: b.name,
-        district_id: b.districtId,
-        district_slug: b.district?.slug || '',
-        created_at: b.createdAt.toISOString(),
-        updated_at: b.updatedAt.toISOString(),
-      }));
+      const formatted = buildings.map((b) => {
+        // Type assertion для доступа к district, который включен через include
+        const buildingWithDistrict = b as typeof b & {
+          district: { id: number; name: string; slug: string };
+        };
+        return {
+          id: buildingWithDistrict.id,
+          slug: buildingWithDistrict.slug,
+          name: buildingWithDistrict.name,
+          district_id: buildingWithDistrict.districtId,
+          district_slug: buildingWithDistrict.district?.slug || '',
+          created_at: buildingWithDistrict.createdAt.toISOString(),
+          updated_at: buildingWithDistrict.updatedAt.toISOString(),
+        };
+      });
       return NextResponse.json(formatted);
     }
 
