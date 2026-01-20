@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LabelList } from 'recharts';
 
 type FinancialData = {
   sold: {
@@ -184,23 +184,23 @@ export default function FinancialSummary() {
             Portfolio Distribution
           </h3>
           {pieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
-                  cy="50%"
+                  cy="45%"
                   labelLine={false}
-                  label={(props: any) => {
-                    const { name, percent } = props;
-                    if (percent !== undefined) {
-                      return `${name}: ${(percent * 100).toFixed(0)}%`;
-                    }
-                    return name || '';
-                  }}
-                  outerRadius={80}
+                  outerRadius={90}
                   fill="#8884d8"
                   dataKey="value"
+                  label={(props: any) => {
+                    const { percent } = props;
+                    if (percent !== undefined && percent > 0.05) {
+                      return `${(percent * 100).toFixed(0)}%`;
+                    }
+                    return '';
+                  }}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -212,6 +212,19 @@ export default function FinancialSummary() {
                     backgroundColor: 'white',
                     border: '1px solid #e5e7eb',
                     borderRadius: '0.5rem',
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={60}
+                  formatter={(value: string, entry: any) => {
+                    const percent = entry.payload?.percent;
+                    return `${value}: ${percent ? (percent * 100).toFixed(0) : 0}%`;
+                  }}
+                  iconType="circle"
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    fontSize: '12px',
                   }}
                 />
               </PieChart>
