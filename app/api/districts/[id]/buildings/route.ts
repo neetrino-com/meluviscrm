@@ -39,12 +39,12 @@ export async function GET(
 
     // Формат для внешнего API (с id и slug для district)
     if (authHeader && apiToken) {
-      const formatted = buildings.map((b) => ({
+      const formatted = buildings.map((b: any) => ({
         id: b.id,
         slug: b.slug,
         name: b.name,
         district_id: b.districtId,
-        district_slug: b.district.slug,
+        district_slug: b.district?.slug || '',
         created_at: b.createdAt.toISOString(),
         updated_at: b.updatedAt.toISOString(),
       }));
