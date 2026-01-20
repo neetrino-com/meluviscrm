@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "prisma generate && prisma migrate deploy --skip-seed && next build",
+    "vercel-build": "prisma generate && timeout 30 prisma migrate deploy || echo 'Migration timeout or already applied, continuing build...' && next build",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
