@@ -67,9 +67,19 @@ export default function SalesTimeline() {
 
   const chartData = data.map((item) => ({
     month: formatMonth(item.month),
+    monthRaw: item.month, // Сохраняем оригинальный формат для сортировки
     'Deals Count': item.count,
     'Amount (M AMD)': (item.amount / 1000000).toFixed(1),
   }));
+
+  // Автоматическая настройка отображения меток на оси X
+  const dataLength = chartData.length;
+  // Если данных больше 12 месяцев, показываем метки через интервал
+  const tickInterval = dataLength > 24 ? Math.ceil(dataLength / 12) : dataLength > 12 ? 2 : 1;
+  // Наклон меток если данных много
+  const angle = dataLength > 18 ? -45 : 0;
+  const textAnchor = dataLength > 18 ? 'end' : 'middle';
+  const tickMargin = dataLength > 18 ? 10 : 5;
 
   return (
     <div className="card p-6">
@@ -90,8 +100,13 @@ export default function SalesTimeline() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#6b7280"
-                  fontSize={12}
+                  fontSize={11}
                   tickLine={false}
+                  angle={angle}
+                  textAnchor={textAnchor}
+                  height={angle !== 0 ? 60 : 30}
+                  interval={tickInterval === 1 ? 0 : tickInterval - 1}
+                  tickMargin={tickMargin}
                 />
                 <YAxis 
                   stroke="#6b7280"
@@ -123,8 +138,13 @@ export default function SalesTimeline() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#6b7280"
-                  fontSize={12}
+                  fontSize={11}
                   tickLine={false}
+                  angle={angle}
+                  textAnchor={textAnchor}
+                  height={angle !== 0 ? 60 : 30}
+                  interval={tickInterval === 1 ? 0 : tickInterval - 1}
+                  tickMargin={tickMargin}
                 />
                 <YAxis 
                   stroke="#6b7280"
