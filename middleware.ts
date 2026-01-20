@@ -14,6 +14,24 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Allow API routes with Bearer Token (they handle auth themselves)
+  if (path.startsWith('/api/')) {
+    const authHeader = req.headers.get('authorization');
+    const apiToken = process.env.API_TOKEN;
+    
+    // If Bearer Token is present, let API route handle authentication
+    if (authHeader && authHeader.startsWith('Bearer ') && apiToken) {
+      return NextResponse.next();
+    }
+    
+    // For API routes without Bearer Token, check session
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    return NextResponse.next();
+  }
+
   // Require authentication for all other pages
   if (!session) {
     return NextResponse.redirect(new URL('/login', req.url));
