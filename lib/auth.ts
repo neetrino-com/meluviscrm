@@ -1,7 +1,8 @@
 import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
-import bcrypt from 'bcryptjs';
+// Динамический импорт функции авторизации, чтобы bcryptjs не загружался в Edge Runtime
+// authorizeUser использует bcryptjs, который работает только в Node.js runtime
+let authorizeUser: ((email: string, password: string) => Promise<{ id: string; email: string; role: string } | null>) | null = null;
 
 export const authConfig: NextAuthConfig = {
   providers: [
@@ -19,28 +20,15 @@ export const authConfig: NextAuthConfig = {
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (!user) {
-          return null;
+        // Динамический импорт функции авторизации только когда она действительно нужна
+        // Это предотвращает загрузку bcryptjs в Edge Runtime (middleware)
+        // Файл authorize.ts использует bcryptjs, который работает только в Node.js runtime
+        if (!authorizeUser) {
+          const authModule = await import('./authorize');
+          authorizeUser = authModule.authorizeUser;
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          password,
-          user.passwordHash
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        };
+        return await authorizeUser(email, password);
       },
     }),
   ],
