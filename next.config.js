@@ -11,6 +11,11 @@ const nextConfig = {
     }
     return config;
   },
+  // Исключаем bcryptjs из проверки Edge Runtime
+  // так как он используется только в Node.js runtime (API routes)
+  experimental: {
+    serverComponentsExternalPackages: ['bcryptjs'],
+  },
 }
 
 module.exports = nextConfig
