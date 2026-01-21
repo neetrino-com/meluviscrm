@@ -80,6 +80,11 @@ export const apartmentService = {
           priceSqm: true,
           totalPrice: true,
           totalPaid: true,
+          dealDate: true,
+          ownershipName: true,
+          email: true,
+          passportTaxNo: true,
+          phone: true,
           createdAt: true,
           updatedAt: true,
           building: {
@@ -123,6 +128,11 @@ export const apartmentService = {
         sqm: apt.sqm ? Number(apt.sqm) : null,
         price_sqm: apt.priceSqm ? Number(apt.priceSqm) : null,
         total_paid: apt.totalPaid ? Number(apt.totalPaid) : null,
+        deal_date: apt.dealDate ? apt.dealDate.toISOString().split('T')[0] : null,
+        ownership_name: apt.ownershipName,
+        email: apt.email,
+        passport_tax_no: apt.passportTaxNo,
+        phone: apt.phone,
       };
     });
 

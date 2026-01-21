@@ -52,7 +52,7 @@ export async function GET(
       limit,
     });
 
-    // Формат для внешнего API
+    // Формат для внешнего API (с данными сделки)
     const items = result.items.map((apt) => ({
       id: apt.id,
       apartment_no: apt.apartmentNo,
@@ -63,6 +63,11 @@ export async function GET(
       total_price: apt.total_price,
       total_paid: apt.total_paid,
       balance: apt.balance,
+      deal_date: apt.deal_date,
+      ownership_name: apt.ownership_name,
+      email: apt.email,
+      passport_tax_no: apt.passport_tax_no,
+      phone: apt.phone,
       building_id: apt.building.id,
       building_slug: apt.building.slug,
       district_id: apt.building.district.id,
