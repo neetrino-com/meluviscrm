@@ -54,6 +54,7 @@ export async function GET(
     });
 
     // Формат для внешнего API (с id и slug для district и building)
+    // Включаем все поля, включая данные сделки (deal_date, ownership_name, email, passport_tax_no, phone)
     const items = result.items.map((apt) => ({
       id: apt.id,
       apartment_no: apt.apartmentNo,
@@ -64,6 +65,11 @@ export async function GET(
       total_price: apt.total_price,
       total_paid: apt.total_paid,
       balance: apt.balance,
+      deal_date: apt.deal_date,
+      ownership_name: apt.ownership_name,
+      email: apt.email,
+      passport_tax_no: apt.passport_tax_no,
+      phone: apt.phone,
       building_id: apt.building.id,
       building_slug: apt.building.slug,
       district_id: apt.building.district.id,
