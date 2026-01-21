@@ -275,11 +275,11 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/external/apartments/1" \
 
 ### 5. Apartment status update (PUT)
 
-Թարմացնել բնակարանի կարգավիճակը:
+Թարմացնել բնակարանի կարգավիճակը և գործարքի տվյալները:
 
 **Endpoint:** `PUT /api/apartments/{apartment_id}/status`
 
-**Հարցում:**
+**Հարցում (միայն կարգավիճակ):**
 ```bash
 curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
@@ -287,9 +287,30 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -d '{"status": "reserved"}'
 ```
 
+**Հարցում (կարգավիճակ + գործարքի տվյալներ):**
+```bash
+curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
+  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "sold",
+    "deal_date": "2026-01-20",
+    "ownership_name": "John Doe",
+    "email": "john@example.com",
+    "passport_tax_no": "123456789",
+    "phone": "+37412345678"
+  }'
+```
+
 **Պարամետրեր:**
 - `apartment_id` (number, required) - Բնակարանի ID
-- Body: `{"status": "reserved"}`
+- Body (JSON):
+  - `status` (string, required) - Նոր կարգավիճակ
+  - `deal_date` (string, optional, ISO 8601 date) - Գործարքի ամսաթիվ (ձևաչափ: YYYY-MM-DD)
+  - `ownership_name` (string, optional) - Սեփականատիրոջ անուն
+  - `email` (string, optional) - Email
+  - `passport_tax_no` (string, optional) - Անձնագիր/Հարկային համար
+  - `phone` (string, optional) - Հեռախոս
 
 **Վավեր կարգավիճակի արժեքներ:**
 - `upcoming` - Առաջիկա
@@ -301,7 +322,12 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
 ```json
 {
   "id": 1,
-  "status": "reserved",
+  "status": "sold",
+  "deal_date": "2026-01-20",
+  "ownership_name": "John Doe",
+  "email": "john@example.com",
+  "passport_tax_no": "123456789",
+  "phone": "+37412345678",
   "updated_at": "2026-01-20T13:45:01.058Z"
 }
 ```
@@ -309,16 +335,36 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
 **Պատասխանի դաշտեր:**
 - `id` (number) - Բնակարանի ID
 - `status` (string) - Նոր կարգավիճակ
+- `deal_date` (string, ISO 8601 date, nullable) - Գործարքի ամսաթիվ
+- `ownership_name` (string, nullable) - Սեփականատիրոջ անուն
+- `email` (string, nullable) - Email
+- `passport_tax_no` (string, nullable) - Անձնագիր/Հարկային համար
+- `phone` (string, nullable) - Հեռախոս
 - `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
 
 **Հարցումների օրինակներ:**
 
-Փոխել "reserved"-ի:
+Փոխել միայն կարգավիճակը "reserved"-ի:
 ```bash
 curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
   -H "Content-Type: application/json" \
   -d '{"status": "reserved"}'
+```
+
+Փոխել կարգավիճակը և ավելացնել գործարքի տվյալներ:
+```bash
+curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
+  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "sold",
+    "deal_date": "2026-01-20",
+    "ownership_name": "John Doe",
+    "email": "john@example.com",
+    "passport_tax_no": "123456789",
+    "phone": "+37412345678"
+  }'
 ```
 
 Փոխել "available"-ի:
@@ -327,14 +373,6 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
   -H "Content-Type: application/json" \
   -d '{"status": "available"}'
-```
-
-Փոխել "sold"-ի:
-```bash
-curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
-  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "sold"}'
 ```
 
 ---

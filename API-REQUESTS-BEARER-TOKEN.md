@@ -275,11 +275,11 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/external/apartments/1" \
 
 ### 5. Apartment status update (PUT)
 
-Обновить статус квартиры.
+Обновить статус квартиры и данные сделки.
 
 **Endpoint:** `PUT /api/apartments/{apartment_id}/status`
 
-**Запрос:**
+**Запрос (только статус):**
 ```bash
 curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
@@ -287,9 +287,30 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -d '{"status": "reserved"}'
 ```
 
+**Запрос (статус + данные сделки):**
+```bash
+curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
+  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "sold",
+    "deal_date": "2026-01-20",
+    "ownership_name": "John Doe",
+    "email": "john@example.com",
+    "passport_tax_no": "123456789",
+    "phone": "+37412345678"
+  }'
+```
+
 **Параметры:**
 - `apartment_id` (number, required) - ID квартиры
-- Body: `{"status": "reserved"}`
+- Body (JSON):
+  - `status` (string, required) - Новый статус
+  - `deal_date` (string, optional, ISO 8601 date) - Дата сделки (формат: YYYY-MM-DD)
+  - `ownership_name` (string, optional) - Имя владельца
+  - `email` (string, optional) - Email
+  - `passport_tax_no` (string, optional) - Паспорт/Налоговый номер
+  - `phone` (string, optional) - Телефон
 
 **Валидные значения статуса:**
 - `upcoming` - Предстоящая
@@ -301,7 +322,12 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
 ```json
 {
   "id": 1,
-  "status": "reserved",
+  "status": "sold",
+  "deal_date": "2026-01-20",
+  "ownership_name": "John Doe",
+  "email": "john@example.com",
+  "passport_tax_no": "123456789",
+  "phone": "+37412345678",
   "updated_at": "2026-01-20T13:45:01.058Z"
 }
 ```
@@ -309,16 +335,36 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
 **Поля ответа:**
 - `id` (number) - ID квартиры
 - `status` (string) - Новый статус
+- `deal_date` (string, ISO 8601 date, nullable) - Дата сделки
+- `ownership_name` (string, nullable) - Имя владельца
+- `email` (string, nullable) - Email
+- `passport_tax_no` (string, nullable) - Паспорт/Налоговый номер
+- `phone` (string, nullable) - Телефон
 - `updated_at` (string, ISO 8601) - Дата обновления
 
 **Примеры запросов:**
 
-Изменить на "reserved":
+Изменить только статус на "reserved":
 ```bash
 curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
   -H "Content-Type: application/json" \
   -d '{"status": "reserved"}'
+```
+
+Изменить статус и добавить данные сделки:
+```bash
+curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
+  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "sold",
+    "deal_date": "2026-01-20",
+    "ownership_name": "John Doe",
+    "email": "john@example.com",
+    "passport_tax_no": "123456789",
+    "phone": "+37412345678"
+  }'
 ```
 
 Изменить на "available":
@@ -327,14 +373,6 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
   -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
   -H "Content-Type: application/json" \
   -d '{"status": "available"}'
-```
-
-Изменить на "sold":
-```bash
-curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
-  -H "Authorization: Bearer 026bf0c4fdbe8af4c3a3a14485c02eb160833b87758323e60fe2ac701a6f9852" \
-  -H "Content-Type: application/json" \
-  -d '{"status": "sold"}'
 ```
 
 ---
