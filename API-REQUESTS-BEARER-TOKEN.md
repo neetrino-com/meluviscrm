@@ -142,6 +142,11 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
       "total_price": 34060000,
       "total_paid": 0,
       "balance": 34060000,
+      "deal_date": null,
+      "ownership_name": null,
+      "email": null,
+      "passport_tax_no": null,
+      "phone": null,
       "building_id": 1,
       "building_slug": "tower-1",
       "district_id": 1,
@@ -170,6 +175,11 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
   - `total_price` (number) - Общая цена (AMD)
   - `total_paid` (number) - Оплачено (AMD)
   - `balance` (number) - Остаток к оплате (AMD)
+  - `deal_date` (string, ISO 8601 date, nullable) - Дата сделки
+  - `ownership_name` (string, nullable) - Имя владельца
+  - `email` (string, nullable) - Email
+  - `passport_tax_no` (string, nullable) - Паспорт/Налоговый номер
+  - `phone` (string, nullable) - Телефон
   - `building_id` (number) - ID здания
   - `building_slug` (string) - Slug здания
   - `district_id` (number) - ID района
