@@ -39,14 +39,51 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateApartmentStatusSchema.parse(body);
 
-    const apartment = await apartmentService.updateStatus(
-      id,
-      validatedData.status
-    );
+    // Преобразование данных для обновления
+    const updateData: any = {
+      status: validatedData.status,
+    };
+
+    // Добавляем дополнительные поля, если они предоставлены
+    if (validatedData.deal_date !== undefined) {
+      updateData.dealDate = validatedData.deal_date
+        ? new Date(validatedData.deal_date)
+        : null;
+    }
+    if (validatedData.ownership_name !== undefined) {
+      updateData.ownershipName = validatedData.ownership_name;
+    }
+    if (validatedData.email !== undefined) {
+      updateData.email = validatedData.email;
+    }
+    if (validatedData.passport_tax_no !== undefined) {
+      updateData.passportTaxNo = validatedData.passport_tax_no;
+    }
+    if (validatedData.phone !== undefined) {
+      updateData.phone = validatedData.phone;
+    }
+
+    // Используем метод update для обновления всех полей
+    await apartmentService.update(id, updateData);
+    
+    // Получаем обновленную квартиру
+    const apartment = await apartmentService.getById(id);
+    
+    if (!apartment) {
+      return NextResponse.json(
+        { error: 'Apartment not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       id: apartment.id,
       status: apartment.status.toLowerCase(),
+      deal_date: apartment.dealDate ? apartment.dealDate.toISOString().split('T')[0] : null,
+      ownership_name: apartment.ownershipName,
+      email: apartment.email,
+      passport_tax_no: apartment.passportTaxNo,
+      phone: apartment.phone,
       updated_at: apartment.updatedAt.toISOString(),
     });
   } catch (error) {

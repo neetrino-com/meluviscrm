@@ -79,4 +79,9 @@ export const updateApartmentStatusSchema = z.object({
       val.toUpperCase() as 'UPCOMING' | 'AVAILABLE' | 'RESERVED' | 'SOLD'
     )
   ),
+  deal_date: z.string().date().optional().nullable().or(z.literal('').transform(() => null)),
+  ownership_name: z.string().max(500).optional().nullable().or(z.literal('').transform(() => null)),
+  email: z.string().email('Invalid email').optional().nullable().or(z.literal('').transform(() => null)),
+  passport_tax_no: z.string().max(100).optional().nullable().or(z.literal('').transform(() => null)),
+  phone: z.string().max(50).optional().nullable().or(z.literal('').transform(() => null)),
 });
