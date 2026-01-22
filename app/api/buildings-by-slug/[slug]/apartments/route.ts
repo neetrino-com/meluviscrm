@@ -53,6 +53,7 @@ export async function GET(
     });
 
     // Формат для внешнего API (с данными сделки)
+    // Включаем все поля, как в apartment show
     const items = result.items.map((apt) => ({
       id: apt.id,
       apartment_no: apt.apartmentNo,
@@ -68,10 +69,19 @@ export async function GET(
       email: apt.email,
       passport_tax_no: apt.passport_tax_no,
       phone: apt.phone,
+      sales_type: apt.sales_type ? apt.sales_type.toLowerCase() : null,
+      deal_description: apt.deal_description,
+      matter_link: apt.matter_link,
+      floorplan_distribution: apt.floorplan_distribution,
+      exterior_link: apt.exterior_link,
+      exterior_link2: apt.exterior_link2,
       building_id: apt.building.id,
       building_slug: apt.building.slug,
+      building_name: apt.building.name,
       district_id: apt.building.district.id,
       district_slug: apt.building.district.slug,
+      district_name: apt.building.district.name,
+      attachments: apt.attachments,
       created_at: apt.createdAt.toISOString(),
       updated_at: apt.updatedAt.toISOString(),
     }));
