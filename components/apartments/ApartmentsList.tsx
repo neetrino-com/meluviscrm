@@ -125,22 +125,6 @@ export default function ApartmentsList() {
   });
   const isAdmin = session?.user?.role === 'ADMIN';
 
-  useEffect(() => {
-    fetchDistricts();
-    fetchBuildings();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-    fetchApartments(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedBuilding, selectedStatus, sortBy, sortOrder]);
-
-  useEffect(() => {
-    fetchApartments(currentPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
-
   const fetchDistricts = async () => {
     try {
       const response = await fetch('/api/districts');
@@ -165,7 +149,7 @@ export default function ApartmentsList() {
     }
   };
 
-  const fetchApartments = async (page: number = 1) => {
+  const fetchApartments = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       let url = `/api/apartments?page=${page}&limit=50&sortBy=${sortBy}&sortOrder=${sortOrder}`;
@@ -186,7 +170,21 @@ export default function ApartmentsList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortBy, sortOrder, selectedBuilding, selectedStatus]);
+
+  useEffect(() => {
+    fetchDistricts();
+    fetchBuildings();
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchApartments(1);
+  }, [selectedBuilding, selectedStatus, sortBy, sortOrder, fetchApartments]);
+
+  useEffect(() => {
+    fetchApartments(currentPage);
+  }, [currentPage, fetchApartments]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -265,7 +263,7 @@ export default function ApartmentsList() {
         console.error(err);
       }
     }, 0);
-  }, [currentPage]);
+  }, [currentPage, fetchApartments]);
 
   const getStatusColor = useCallback((status: string) => {
     switch (status.toLowerCase()) {
