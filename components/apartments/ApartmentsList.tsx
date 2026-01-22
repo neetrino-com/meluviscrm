@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import type { Building, District } from '@prisma/client';
@@ -17,6 +17,91 @@ type Apartment = {
   building: Building & { district: District };
   updatedAt: string;
 };
+
+// Мемоизированный компонент карточки квартиры для оптимизации рендеринга
+const ApartmentCardItem = memo(({ 
+  apt, 
+  onStatusChange, 
+  getStatusColor 
+}: { 
+  apt: Apartment; 
+  onStatusChange: (id: number, status: string) => void;
+  getStatusColor: (status: string) => string;
+}) => {
+  return (
+    <div className="card card-hover p-5">
+      <div className="mb-4 flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {apt.apartmentNo}
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {apt.building.district.name} - {apt.building.name}
+          </p>
+        </div>
+        <select
+          value={apt.status}
+          onChange={(e) => onStatusChange(apt.id, e.target.value)}
+          className={`badge border ${getStatusColor(apt.status)} cursor-pointer text-xs appearance-none bg-right bg-no-repeat pr-8 pl-3 py-1.5 font-medium transition-colors`}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+            backgroundPosition: 'right 0.75rem center',
+            paddingRight: '2rem',
+          }}
+        >
+          <option value="UPCOMING">Upcoming</option>
+          <option value="AVAILABLE">Available</option>
+          <option value="RESERVED">Reserved</option>
+          <option value="SOLD">Sold</option>
+        </select>
+      </div>
+
+      <div className="space-y-3 border-t border-gray-100 pt-4">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Area</span>
+          <span className="font-medium text-gray-900">
+            {apt.sqm ? `${apt.sqm} m²` : '-'}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Price</span>
+          <span className="font-semibold text-gray-900">
+            {apt.total_price
+              ? `${(apt.total_price / 1000000).toFixed(1)}M AMD`
+              : '-'}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Paid</span>
+          <span className="font-medium text-gray-900">
+            {apt.total_paid
+              ? `${(apt.total_paid / 1000000).toFixed(1)}M AMD`
+              : '-'}
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Balance</span>
+          <span className="font-medium text-gray-900">
+            {apt.balance
+              ? `${(apt.balance / 1000000).toFixed(1)}M AMD`
+              : '-'}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <Link
+          href={`/apartments/${apt.id}`}
+          className="block w-full rounded-lg bg-gray-50 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+        >
+          View Details
+        </Link>
+      </div>
+    </div>
+  );
+});
+
+ApartmentCardItem.displayName = 'ApartmentCardItem';
 
 export default function ApartmentsList() {
   const { data: session } = useSession();
@@ -136,7 +221,7 @@ export default function ApartmentsList() {
     );
   };
 
-  const handleStatusChange = async (id: number, newStatus: string) => {
+  const handleStatusChange = useCallback(async (id: number, newStatus: string) => {
     // Оптимистичное обновление UI - сразу обновляем статус в списке
     setApartments((prevApartments) =>
       prevApartments.map((apt) =>
@@ -180,9 +265,9 @@ export default function ApartmentsList() {
         console.error(err);
       }
     }, 0);
-  };
+  }, [currentPage]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status.toLowerCase()) {
       case 'upcoming':
         return 'bg-gray-100 text-gray-700 border-gray-200';
@@ -195,7 +280,7 @@ export default function ApartmentsList() {
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
-  };
+  }, []);
 
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
@@ -345,75 +430,12 @@ export default function ApartmentsList() {
         /* Cards Grid View */
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {apartments.map((apt) => (
-            <div key={apt.id} className="card card-hover p-5">
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {apt.apartmentNo}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {apt.building.district.name} - {apt.building.name}
-                  </p>
-                </div>
-                <select
-                  value={apt.status}
-                  onChange={(e) => handleStatusChange(apt.id, e.target.value)}
-                  className={`badge border ${getStatusColor(apt.status)} cursor-pointer text-xs appearance-none bg-right bg-no-repeat pr-8 pl-3 py-1.5 font-medium transition-colors`}
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 4L6 8L10 4' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                    backgroundPosition: 'right 0.75rem center',
-                    paddingRight: '2rem',
-                  }}
-                >
-                  <option value="UPCOMING">Upcoming</option>
-                  <option value="AVAILABLE">Available</option>
-                  <option value="RESERVED">Reserved</option>
-                  <option value="SOLD">Sold</option>
-                </select>
-              </div>
-
-              <div className="space-y-3 border-t border-gray-100 pt-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Area</span>
-                  <span className="font-medium text-gray-900">
-                    {apt.sqm ? `${apt.sqm} m²` : '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Price</span>
-                  <span className="font-semibold text-gray-900">
-                    {apt.total_price
-                      ? `${(apt.total_price / 1000000).toFixed(1)}M AMD`
-                      : '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Paid</span>
-                  <span className="font-medium text-gray-900">
-                    {apt.total_paid
-                      ? `${(apt.total_paid / 1000000).toFixed(1)}M AMD`
-                      : '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Balance</span>
-                  <span className="font-medium text-gray-900">
-                    {apt.balance
-                      ? `${(apt.balance / 1000000).toFixed(1)}M AMD`
-                      : '-'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link
-                  href={`/apartments/${apt.id}`}
-                  className="block w-full rounded-lg bg-gray-50 px-4 py-2 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-                >
-                  View Details
-                </Link>
-              </div>
-            </div>
+            <ApartmentCardItem
+              key={apt.id}
+              apt={apt}
+              onStatusChange={handleStatusChange}
+              getStatusColor={getStatusColor}
+            />
           ))}
         </div>
       ) : (
