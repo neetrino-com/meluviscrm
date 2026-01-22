@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { buildingService } from '@/services/building.service';
 import { updateBuildingSchema } from '@/lib/validations';
+import { invalidateCache, cacheKeys } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(
@@ -67,6 +68,14 @@ export async function PUT(
     const validatedData = updateBuildingSchema.parse(body);
 
     const building = await buildingService.update(id, validatedData);
+    
+    // Инвалидируем кеш при обновлении building
+    invalidateCache([
+      cacheKeys.buildings(),
+      cacheKeys.buildings(building.districtId),
+      cacheKeys.districts
+    ]);
+    
     return NextResponse.json(building);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -116,7 +125,20 @@ export async function DELETE(
       );
     }
 
+    // Получаем building перед удалением для инвалидации кеша
+    const building = await buildingService.getById(id);
+    
     await buildingService.delete(id);
+    
+    // Инвалидируем кеш при удалении building
+    if (building) {
+      invalidateCache([
+        cacheKeys.buildings(),
+        cacheKeys.buildings(building.districtId),
+        cacheKeys.districts
+      ]);
+    }
+    
     return NextResponse.json({ message: 'Building deleted' }, { status: 200 });
   } catch (error) {
     if (error instanceof Error) {

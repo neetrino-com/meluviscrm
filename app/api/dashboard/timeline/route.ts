@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { dashboardService } from '@/services/dashboard.service';
+import { getCachedData, cacheKeys } from '@/lib/cache';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
@@ -10,7 +13,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const timeline = await dashboardService.getSalesTimeline();
+    // Кеш на 60 секунд - максимум 1 минута для актуальности данных
+    const timeline = await getCachedData(
+      cacheKeys.dashboard.timeline,
+      () => dashboardService.getSalesTimeline(),
+      60, // 60 секунд (1 минута)
+      ['dashboard']
+    );
+
     return NextResponse.json(timeline);
   } catch (error) {
     console.error('[API] Error fetching sales timeline:', error);

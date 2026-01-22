@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { apartmentService } from '@/services/apartment.service';
 import { createApartmentSchema } from '@/lib/validations';
+import { invalidateCache, cacheKeys } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(request: NextRequest) {
@@ -54,6 +55,15 @@ export async function POST(request: NextRequest) {
     const validatedData = createApartmentSchema.parse(body);
 
     const apartment = await apartmentService.create(validatedData);
+    
+    // Инвалидируем кеш dashboard при создании apartment
+    invalidateCache([
+      cacheKeys.dashboard.summary,
+      cacheKeys.dashboard.financial,
+      cacheKeys.dashboard.timeline,
+      cacheKeys.buildings(apartment.building.districtId)
+    ]);
+    
     return NextResponse.json(apartment, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
