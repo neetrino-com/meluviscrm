@@ -85,6 +85,12 @@ export const apartmentService = {
           email: true,
           passportTaxNo: true,
           phone: true,
+          salesType: true,
+          dealDescription: true,
+          matterLink: true,
+          floorplanDistribution: true,
+          exteriorLink: true,
+          exteriorLink2: true,
           createdAt: true,
           updatedAt: true,
           building: {
@@ -99,6 +105,16 @@ export const apartmentService = {
                   slug: true,
                 },
               },
+            },
+          },
+          attachments: {
+            select: {
+              id: true,
+              fileType: true,
+              fileName: true,
+              fileUrl: true,
+              fileSize: true,
+              createdAt: true,
             },
           },
         },
@@ -133,6 +149,47 @@ export const apartmentService = {
         email: apt.email,
         passport_tax_no: apt.passportTaxNo,
         phone: apt.phone,
+        sales_type: apt.salesType,
+        deal_description: apt.dealDescription,
+        matter_link: apt.matterLink,
+        floorplan_distribution: apt.floorplanDistribution,
+        exterior_link: apt.exteriorLink,
+        exterior_link2: apt.exteriorLink2,
+        attachments: apt.attachments ? {
+          agreement_files: apt.attachments.filter((a: any) => a.fileType === 'AGREEMENT').map((a: any) => ({
+            id: a.id,
+            file_name: a.fileName,
+            file_url: a.fileUrl,
+            file_size: a.fileSize,
+            created_at: a.createdAt.toISOString(),
+          })),
+          floorplans_files: apt.attachments.filter((a: any) => a.fileType === 'FLOORPLAN').map((a: any) => ({
+            id: a.id,
+            file_name: a.fileName,
+            file_url: a.fileUrl,
+            file_size: a.fileSize,
+            created_at: a.createdAt.toISOString(),
+          })),
+          images_files: apt.attachments.filter((a: any) => a.fileType === 'IMAGE').map((a: any) => ({
+            id: a.id,
+            file_name: a.fileName,
+            file_url: a.fileUrl,
+            file_size: a.fileSize,
+            created_at: a.createdAt.toISOString(),
+          })),
+          progress_images_files: apt.attachments.filter((a: any) => a.fileType === 'PROGRESS_IMAGE').map((a: any) => ({
+            id: a.id,
+            file_name: a.fileName,
+            file_url: a.fileUrl,
+            file_size: a.fileSize,
+            created_at: a.createdAt.toISOString(),
+          })),
+        } : {
+          agreement_files: [],
+          floorplans_files: [],
+          images_files: [],
+          progress_images_files: [],
+        },
       };
     });
 
