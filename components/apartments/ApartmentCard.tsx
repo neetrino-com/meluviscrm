@@ -234,33 +234,66 @@ export default function ApartmentCard({ apartmentId }: ApartmentCardProps) {
   };
 
   const handleStatusChange = async (newStatus: string) => {
-    try {
-      const response = await fetch(`/api/apartments/${apartmentId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+    // Оптимистичное обновление UI - сразу обновляем статус
+    const previousStatus = apartment?.status;
+    setApartment((prev) => (prev ? { ...prev, status: newStatus } : prev));
 
-      if (!response.ok) throw new Error('Failed to update status');
+    // Делаем запрос асинхронно без блокировки UI
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/apartments/${apartmentId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
 
-      const updated = await response.json();
-      // Обновляем статус сразу без перезагрузки страницы
-      setApartment({ ...apartment!, status: newStatus });
-      
-      // Обновляем данные с сервера без кэша, но без показа loading
-      const url = `/api/apartments/${apartmentId}?t=${Date.now()}`;
-      const refreshResponse = await fetch(url, {
-        cache: 'no-store',
-      });
-      if (refreshResponse.ok) {
-        const refreshedData = await refreshResponse.json();
-        setApartment(refreshedData);
-        setFormData(refreshedData);
+        if (!response.ok) throw new Error('Failed to update status');
+
+        const updated = await response.json();
+        // Обновляем статус из ответа сервера
+        setApartment((prev) => (prev ? { ...prev, status: updated.status.toUpperCase() } : prev));
+        
+        // Обновляем данные с сервера в фоне (не блокируя UI)
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(async () => {
+            try {
+              const url = `/api/apartments/${apartmentId}?t=${Date.now()}`;
+              const refreshResponse = await fetch(url, {
+                cache: 'no-store',
+              });
+              if (refreshResponse.ok) {
+                const refreshedData = await refreshResponse.json();
+                setApartment(refreshedData);
+                setFormData(refreshedData);
+              }
+            } catch (refreshErr) {
+              console.error('Refresh error:', refreshErr);
+            }
+          });
+        } else {
+          setTimeout(async () => {
+            try {
+              const url = `/api/apartments/${apartmentId}?t=${Date.now()}`;
+              const refreshResponse = await fetch(url, {
+                cache: 'no-store',
+              });
+              if (refreshResponse.ok) {
+                const refreshedData = await refreshResponse.json();
+                setApartment(refreshedData);
+                setFormData(refreshedData);
+              }
+            } catch (refreshErr) {
+              console.error('Refresh error:', refreshErr);
+            }
+          }, 100);
+        }
+      } catch (err) {
+        console.error('Status update error:', err);
+        // Откатываем оптимистичное обновление при ошибке
+        setApartment((prev) => (prev ? { ...prev, status: previousStatus || 'UPCOMING' } : prev));
+        alert('Failed to update status');
       }
-    } catch (err) {
-      console.error('Status update error:', err);
-      alert('Failed to update status');
-    }
+    }, 0);
   };
 
   const getSalesTypeLabel = (type: string) => {
