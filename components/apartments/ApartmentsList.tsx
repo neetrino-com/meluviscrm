@@ -137,22 +137,49 @@ export default function ApartmentsList() {
   };
 
   const handleStatusChange = async (id: number, newStatus: string) => {
-    try {
-      const response = await fetch(`/api/apartments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+    // Оптимистичное обновление UI - сразу обновляем статус в списке
+    setApartments((prevApartments) =>
+      prevApartments.map((apt) =>
+        apt.id === id ? { ...apt, status: newStatus } : apt
+      )
+    );
 
-      if (!response.ok) {
-        throw new Error('Failed to update status');
+    // Делаем запрос асинхронно без блокировки UI
+    // Используем setTimeout для неблокирующего выполнения
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/apartments/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update status');
+        }
+
+        // Обновляем только текущую страницу в фоне (не блокируя UI)
+        // Используем requestIdleCallback если доступен, иначе setTimeout
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            fetchApartments(currentPage);
+          });
+        } else {
+          setTimeout(() => {
+            fetchApartments(currentPage);
+          }, 100);
+        }
+      } catch (err) {
+        // Откатываем оптимистичное обновление при ошибке
+        setApartments((prevApartments) =>
+          prevApartments.map((apt) =>
+            apt.id === id ? { ...apt, status: apt.status } : apt
+          )
+        );
+        alert('Failed to update status');
+        console.error(err);
       }
-
-      fetchApartments(currentPage);
-    } catch (err) {
-      alert('Failed to update status');
-      console.error(err);
-    }
+    }, 0);
   };
 
   const getStatusColor = (status: string) => {
