@@ -24,30 +24,33 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/districts" \
 
 **Ответ:**
 ```json
-[
-  {
-    "id": 1,
-    "slug": "kentron",
-    "name": "Kentron",
-    "created_at": "2026-01-19T14:27:17.070Z",
-    "updated_at": "2026-01-19T14:27:17.070Z"
-  },
-  {
-    "id": 2,
-    "slug": "arabkir",
-    "name": "Arabkir",
-    "created_at": "2026-01-19T14:27:17.683Z",
-    "updated_at": "2026-01-19T14:27:17.683Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "kentron",
+      "name": "Kentron",
+      "created_at": "2026-01-19T14:27:17.070Z",
+      "updated_at": "2026-01-19T14:27:17.070Z"
+    },
+    {
+      "id": 2,
+      "slug": "arabkir",
+      "name": "Arabkir",
+      "created_at": "2026-01-19T14:27:17.683Z",
+      "updated_at": "2026-01-19T14:27:17.683Z"
+    }
+  ]
+}
 ```
 
 **Поля ответа:**
-- `id` (number) - ID района
-- `slug` (string) - Уникальный идентификатор (используется для запросов)
-- `name` (string) - Название района
-- `created_at` (string, ISO 8601) - Дата создания
-- `updated_at` (string, ISO 8601) - Дата обновления
+- `data` (array) - Массив районов
+  - `id` (number) - ID района
+  - `slug` (string) - Уникальный идентификатор (используется для запросов)
+  - `name` (string) - Название района
+  - `created_at` (string, ISO 8601) - Дата создания
+  - `updated_at` (string, ISO 8601) - Дата обновления
 
 ---
 
@@ -69,36 +72,39 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/districts/1/buildings" \
 
 **Ответ:**
 ```json
-[
-  {
-    "id": 1,
-    "slug": "tower-1",
-    "name": "Tower 1",
-    "district_id": 1,
-    "district_slug": "kentron",
-    "created_at": "2026-01-19T14:27:18.060Z",
-    "updated_at": "2026-01-19T14:27:18.060Z"
-  },
-  {
-    "id": 2,
-    "slug": "tower-2",
-    "name": "Tower 2",
-    "district_id": 1,
-    "district_slug": "kentron",
-    "created_at": "2026-01-19T14:27:18.664Z",
-    "updated_at": "2026-01-19T14:27:18.664Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "tower-1",
+      "name": "Tower 1",
+      "district_id": 1,
+      "district_slug": "kentron",
+      "created_at": "2026-01-19T14:27:18.060Z",
+      "updated_at": "2026-01-19T14:27:18.060Z"
+    },
+    {
+      "id": 2,
+      "slug": "tower-2",
+      "name": "Tower 2",
+      "district_id": 1,
+      "district_slug": "kentron",
+      "created_at": "2026-01-19T14:27:18.664Z",
+      "updated_at": "2026-01-19T14:27:18.664Z"
+    }
+  ]
+}
 ```
 
 **Поля ответа:**
-- `id` (number) - ID здания
-- `slug` (string) - Уникальный идентификатор здания
-- `name` (string) - Название здания
-- `district_id` (number) - ID района
-- `district_slug` (string) - Slug района
-- `created_at` (string, ISO 8601) - Дата создания
-- `updated_at` (string, ISO 8601) - Дата обновления
+- `data` (array) - Массив зданий
+  - `id` (number) - ID здания
+  - `slug` (string) - Уникальный идентификатор здания
+  - `name` (string) - Название здания
+  - `district_id` (number) - ID района
+  - `district_slug` (string) - Slug района
+  - `created_at` (string, ISO 8601) - Дата создания
+  - `updated_at` (string, ISO 8601) - Дата обновления
 
 ---
 
@@ -131,41 +137,44 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
 **Ответ:**
 ```json
 {
-  "items": [
-    {
-      "id": 1,
-      "apartment_no": "12-05",
-      "apartment_type": 2,
-      "status": "available",
-      "sqm": 52.4,
-      "price_sqm": 650000,
-      "total_price": 34060000,
-      "total_paid": 0,
-      "balance": 34060000,
-      "deal_date": null,
-      "ownership_name": null,
-      "email": null,
-      "passport_tax_no": null,
-      "phone": null,
-      "building_id": 1,
-      "building_slug": "tower-1",
-      "district_id": 1,
-      "district_slug": "kentron",
-      "created_at": "2026-01-19T14:27:19.476Z",
-      "updated_at": "2026-01-19T14:27:19.476Z"
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "apartment_no": "12-05",
+        "apartment_type": 2,
+        "status": "available",
+        "sqm": 52.4,
+        "price_sqm": 650000,
+        "total_price": 34060000,
+        "total_paid": 0,
+        "balance": 34060000,
+        "deal_date": null,
+        "ownership_name": null,
+        "email": null,
+        "passport_tax_no": null,
+        "phone": null,
+        "building_id": 1,
+        "building_slug": "tower-1",
+        "district_id": 1,
+        "district_slug": "kentron",
+        "created_at": "2026-01-19T14:27:19.476Z",
+        "updated_at": "2026-01-19T14:27:19.476Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 5,
+      "total_pages": 1
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 50,
-    "total": 5,
-    "total_pages": 1
   }
 }
 ```
 
 **Поля ответа:**
-- `items` (array) - Массив квартир
+- `data` (object) - Объект с данными
+  - `items` (array) - Массив квартир
   - `id` (number) - ID квартиры
   - `apartment_no` (string) - Номер квартиры
   - `apartment_type` (number) - Тип квартиры
@@ -186,7 +195,7 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
   - `district_slug` (string) - Slug района
   - `created_at` (string, ISO 8601) - Дата создания
   - `updated_at` (string, ISO 8601) - Дата обновления
-- `pagination` (object) - Информация о пагинации
+  - `pagination` (object) - Информация о пагинации
   - `page` (number) - Текущая страница
   - `limit` (number) - Количество на странице
   - `total` (number) - Всего квартир

@@ -54,7 +54,7 @@ export async function GET(
           updated_at: buildingWithDistrict.updatedAt.toISOString(),
         };
       });
-      return NextResponse.json(formatted);
+      return NextResponse.json({ data: formatted });
     }
 
     // Внутренний API - возвращаем полный объект

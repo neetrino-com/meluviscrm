@@ -77,8 +77,10 @@ export async function GET(
     }));
 
     return NextResponse.json({
-      items,
-      pagination: result.pagination,
+      data: {
+        items,
+        pagination: result.pagination,
+      },
     });
   } catch (error) {
     console.error('[API] Error fetching apartments by building slug:', error);

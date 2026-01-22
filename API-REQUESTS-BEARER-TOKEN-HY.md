@@ -24,30 +24,33 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/districts" \
 
 **Պատասխան:**
 ```json
-[
-  {
-    "id": 1,
-    "slug": "kentron",
-    "name": "Kentron",
-    "created_at": "2026-01-19T14:27:17.070Z",
-    "updated_at": "2026-01-19T14:27:17.070Z"
-  },
-  {
-    "id": 2,
-    "slug": "arabkir",
-    "name": "Arabkir",
-    "created_at": "2026-01-19T14:27:17.683Z",
-    "updated_at": "2026-01-19T14:27:17.683Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "kentron",
+      "name": "Kentron",
+      "created_at": "2026-01-19T14:27:17.070Z",
+      "updated_at": "2026-01-19T14:27:17.070Z"
+    },
+    {
+      "id": 2,
+      "slug": "arabkir",
+      "name": "Arabkir",
+      "created_at": "2026-01-19T14:27:17.683Z",
+      "updated_at": "2026-01-19T14:27:17.683Z"
+    }
+  ]
+}
 ```
 
 **Պատասխանի դաշտեր:**
-- `id` (number) - Թաղամասի ID
-- `slug` (string) - Եզակի նույնականացուցիչ (օգտագործվում է հարցումների համար)
-- `name` (string) - Թաղամասի անվանում
-- `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
-- `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
+- `data` (array) - Թաղամասերի զանգված
+  - `id` (number) - Թաղամասի ID
+  - `slug` (string) - Եզակի նույնականացուցիչ (օգտագործվում է հարցումների համար)
+  - `name` (string) - Թաղամասի անվանում
+  - `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
+  - `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
 
 ---
 
@@ -69,36 +72,39 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/districts/1/buildings" \
 
 **Պատասխան:**
 ```json
-[
-  {
-    "id": 1,
-    "slug": "tower-1",
-    "name": "Tower 1",
-    "district_id": 1,
-    "district_slug": "kentron",
-    "created_at": "2026-01-19T14:27:18.060Z",
-    "updated_at": "2026-01-19T14:27:18.060Z"
-  },
-  {
-    "id": 2,
-    "slug": "tower-2",
-    "name": "Tower 2",
-    "district_id": 1,
-    "district_slug": "kentron",
-    "created_at": "2026-01-19T14:27:18.664Z",
-    "updated_at": "2026-01-19T14:27:18.664Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "tower-1",
+      "name": "Tower 1",
+      "district_id": 1,
+      "district_slug": "kentron",
+      "created_at": "2026-01-19T14:27:18.060Z",
+      "updated_at": "2026-01-19T14:27:18.060Z"
+    },
+    {
+      "id": 2,
+      "slug": "tower-2",
+      "name": "Tower 2",
+      "district_id": 1,
+      "district_slug": "kentron",
+      "created_at": "2026-01-19T14:27:18.664Z",
+      "updated_at": "2026-01-19T14:27:18.664Z"
+    }
+  ]
+}
 ```
 
 **Պատասխանի դաշտեր:**
-- `id` (number) - Շենքի ID
-- `slug` (string) - Շենքի եզակի նույնականացուցիչ
-- `name` (string) - Շենքի անվանում
-- `district_id` (number) - Թաղամասի ID
-- `district_slug` (string) - Թաղամասի slug
-- `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
-- `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
+- `data` (array) - Շենքերի զանգված
+  - `id` (number) - Շենքի ID
+  - `slug` (string) - Շենքի եզակի նույնականացուցիչ
+  - `name` (string) - Շենքի անվանում
+  - `district_id` (number) - Թաղամասի ID
+  - `district_slug` (string) - Թաղամասի slug
+  - `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
+  - `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
 
 ---
 
@@ -131,41 +137,44 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
 **Պատասխան:**
 ```json
 {
-  "items": [
-    {
-      "id": 1,
-      "apartment_no": "12-05",
-      "apartment_type": 2,
-      "status": "available",
-      "sqm": 52.4,
-      "price_sqm": 650000,
-      "total_price": 34060000,
-      "total_paid": 0,
-      "balance": 34060000,
-      "deal_date": null,
-      "ownership_name": null,
-      "email": null,
-      "passport_tax_no": null,
-      "phone": null,
-      "building_id": 1,
-      "building_slug": "tower-1",
-      "district_id": 1,
-      "district_slug": "kentron",
-      "created_at": "2026-01-19T14:27:19.476Z",
-      "updated_at": "2026-01-19T14:27:19.476Z"
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "apartment_no": "12-05",
+        "apartment_type": 2,
+        "status": "available",
+        "sqm": 52.4,
+        "price_sqm": 650000,
+        "total_price": 34060000,
+        "total_paid": 0,
+        "balance": 34060000,
+        "deal_date": null,
+        "ownership_name": null,
+        "email": null,
+        "passport_tax_no": null,
+        "phone": null,
+        "building_id": 1,
+        "building_slug": "tower-1",
+        "district_id": 1,
+        "district_slug": "kentron",
+        "created_at": "2026-01-19T14:27:19.476Z",
+        "updated_at": "2026-01-19T14:27:19.476Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 5,
+      "total_pages": 1
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 50,
-    "total": 5,
-    "total_pages": 1
   }
 }
 ```
 
 **Պատասխանի դաշտեր:**
-- `items` (array) - Բնակարանների զանգված
+- `data` (object) - Տվյալների օբյեկտ
+  - `items` (array) - Բնակարանների զանգված
   - `id` (number) - Բնակարանի ID
   - `apartment_no` (string) - Բնակարանի համար
   - `apartment_type` (number) - Բնակարանի տիպ
@@ -186,7 +195,7 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
   - `district_slug` (string) - Թաղամասի slug
   - `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
   - `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
-- `pagination` (object) - Էջավորման տեղեկատվություն
+  - `pagination` (object) - Էջավորման տեղեկատվություն
   - `page` (number) - Ընթացիկ էջ
   - `limit` (number) - Էջում գտնվող քանակ
   - `total` (number) - Ընդհանուր բնակարաններ
