@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { districtService } from '@/services/district.service';
 import { createDistrictSchema } from '@/lib/validations';
+import { getCachedData, cacheKeys, invalidateCache } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(request: NextRequest) {
@@ -11,23 +12,14 @@ export async function GET(request: NextRequest) {
     const apiToken = process.env.API_TOKEN;
 
     if (authHeader && apiToken) {
-      // Внешний API через Bearer Token
+      // Внешний API через Bearer Token - НЕ используем кеш, всегда свежие данные!
       const token = authHeader.replace('Bearer ', '');
       if (token !== apiToken) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-    } else {
-      // Внутренний API через Session
-      const session = await auth();
-      if (!session) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
-
-    const districts = await districtService.getAll();
-    
-    // Формат для внешнего API
-    if (authHeader && apiToken) {
+      
+      // Для внешнего API - всегда свежие данные без кеша
+      const districts = await districtService.getAll();
       const formatted = districts.map((d) => ({
         id: d.id,
         slug: d.slug,
@@ -36,9 +28,23 @@ export async function GET(request: NextRequest) {
         updated_at: d.updatedAt.toISOString(),
       }));
       return NextResponse.json({ data: formatted });
+    } else {
+      // Внутренний API через Session - используем короткий кеш (60 секунд)
+      const session = await auth();
+      if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Кеш на 60 секунд - очень короткий для актуальности данных
+      const districts = await getCachedData(
+        cacheKeys.districts,
+        () => districtService.getAll(),
+        60, // 60 секунд (1 минута)
+        ['districts']
+      );
+      
+      return NextResponse.json(districts);
     }
-    
-    return NextResponse.json(districts);
   } catch (error) {
     console.error('[API] Error fetching districts:', error);
     return NextResponse.json(
@@ -60,6 +66,10 @@ export async function POST(request: NextRequest) {
     const validatedData = createDistrictSchema.parse(body);
 
     const district = await districtService.create(validatedData);
+    
+    // Инвалидируем кеш при создании district
+    invalidateCache([cacheKeys.districts, cacheKeys.buildings()]);
+    
     return NextResponse.json(district, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

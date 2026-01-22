@@ -54,71 +54,122 @@ export const dashboardService = {
   },
 
   async getFinancialSummary() {
-    // Sold apartments
-    const soldApartments = await prisma.apartment.findMany({
-      where: { status: 'SOLD' },
-      select: {
+    // Оптимизация: используем aggregate для сумм totalPrice и totalPaid
+    // Для записей где totalPrice null, вычисляем из sqm * priceSqm отдельным запросом
+    
+    // 1. Агрегация для SOLD квартир (где totalPrice заполнен)
+    const soldWithPrice = await prisma.apartment.aggregate({
+      where: {
+        status: 'SOLD',
+        totalPrice: { not: null },
+      },
+      _sum: {
         totalPrice: true,
         totalPaid: true,
-        sqm: true,
-        priceSqm: true,
       },
     });
 
-    let totalSoldAmount = 0;
-    let totalSoldPaid = 0;
+    // 2. Агрегация для SOLD квартир (где totalPrice null, вычисляем из sqm * priceSqm)
+    const soldWithoutPrice = await prisma.apartment.findMany({
+      where: {
+        status: 'SOLD',
+        totalPrice: null,
+        sqm: { not: null },
+        priceSqm: { not: null },
+      },
+      select: {
+        sqm: true,
+        priceSqm: true,
+        totalPaid: true,
+      },
+    });
 
-    for (const apt of soldApartments) {
-      // Calculate totalPrice: use from DB if exists, otherwise calculate from sqm * priceSqm
-      let apartmentTotalPrice = 0;
-      if (apt.totalPrice) {
-        apartmentTotalPrice = Number(apt.totalPrice);
-      } else if (apt.sqm && apt.priceSqm) {
-        apartmentTotalPrice = Number(apt.sqm) * Number(apt.priceSqm);
-      }
-      
-      totalSoldAmount += apartmentTotalPrice;
-      
-      if (apt.totalPaid) {
-        totalSoldPaid += Number(apt.totalPaid);
+    // 3. Сумма totalPaid для всех SOLD (включая те, где totalPrice null)
+    const soldTotalPaidAggregate = await prisma.apartment.aggregate({
+      where: { status: 'SOLD' },
+      _sum: { totalPaid: true },
+    });
+
+    // Вычисляем суммы для SOLD
+    let totalSoldAmount = soldWithPrice._sum.totalPrice
+      ? Number(soldWithPrice._sum.totalPrice)
+      : 0;
+
+    // Добавляем вычисленные цены для квартир без totalPrice
+    for (const apt of soldWithoutPrice) {
+      if (apt.sqm && apt.priceSqm) {
+        totalSoldAmount += Number(apt.sqm) * Number(apt.priceSqm);
       }
     }
 
+    const totalSoldPaid = soldTotalPaidAggregate._sum.totalPaid
+      ? Number(soldTotalPaidAggregate._sum.totalPaid)
+      : 0;
     const soldBalance = totalSoldAmount - totalSoldPaid;
 
-    // Not sold apartments (Upcoming, Available, Reserved)
-    const notSoldApartments = await prisma.apartment.findMany({
+    // 4. Агрегация для не проданных квартир по статусам (где totalPrice заполнен)
+    const [upcomingWithPrice, availableWithPrice, reservedWithPrice] =
+      await Promise.all([
+        prisma.apartment.aggregate({
+          where: {
+            status: 'UPCOMING',
+            totalPrice: { not: null },
+          },
+          _sum: { totalPrice: true },
+        }),
+        prisma.apartment.aggregate({
+          where: {
+            status: 'AVAILABLE',
+            totalPrice: { not: null },
+          },
+          _sum: { totalPrice: true },
+        }),
+        prisma.apartment.aggregate({
+          where: {
+            status: 'RESERVED',
+            totalPrice: { not: null },
+          },
+          _sum: { totalPrice: true },
+        }),
+      ]);
+
+    // 5. Для квартир без totalPrice вычисляем из sqm * priceSqm
+    const notSoldWithoutPrice = await prisma.apartment.findMany({
       where: {
-        status: {
-          in: ['UPCOMING', 'AVAILABLE', 'RESERVED'],
-        },
+        status: { in: ['UPCOMING', 'AVAILABLE', 'RESERVED'] },
+        totalPrice: null,
+        sqm: { not: null },
+        priceSqm: { not: null },
       },
       select: {
-        totalPrice: true,
+        status: true,
         sqm: true,
         priceSqm: true,
-        status: true,
       },
     });
 
-    let totalUpcomingAmount = 0;
-    let totalAvailableAmount = 0;
-    let totalReservedAmount = 0;
+    // Вычисляем суммы для не проданных квартир
+    let totalUpcomingAmount = upcomingWithPrice._sum.totalPrice
+      ? Number(upcomingWithPrice._sum.totalPrice)
+      : 0;
+    let totalAvailableAmount = availableWithPrice._sum.totalPrice
+      ? Number(availableWithPrice._sum.totalPrice)
+      : 0;
+    let totalReservedAmount = reservedWithPrice._sum.totalPrice
+      ? Number(reservedWithPrice._sum.totalPrice)
+      : 0;
 
-    for (const apt of notSoldApartments) {
-      let amount = 0;
-      if (apt.totalPrice) {
-        amount = Number(apt.totalPrice);
-      } else if (apt.sqm && apt.priceSqm) {
-        amount = Number(apt.sqm) * Number(apt.priceSqm);
-      }
-
-      if (apt.status === 'UPCOMING') {
-        totalUpcomingAmount += amount;
-      } else if (apt.status === 'AVAILABLE') {
-        totalAvailableAmount += amount;
-      } else if (apt.status === 'RESERVED') {
-        totalReservedAmount += amount;
+    // Добавляем вычисленные цены для квартир без totalPrice
+    for (const apt of notSoldWithoutPrice) {
+      if (apt.sqm && apt.priceSqm) {
+        const amount = Number(apt.sqm) * Number(apt.priceSqm);
+        if (apt.status === 'UPCOMING') {
+          totalUpcomingAmount += amount;
+        } else if (apt.status === 'AVAILABLE') {
+          totalAvailableAmount += amount;
+        } else if (apt.status === 'RESERVED') {
+          totalReservedAmount += amount;
+        }
       }
     }
 

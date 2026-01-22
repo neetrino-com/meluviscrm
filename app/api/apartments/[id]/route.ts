@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { apartmentService } from '@/services/apartment.service';
 import { updateApartmentSchema } from '@/lib/validations';
+import { invalidateCache, cacheKeys } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(
@@ -81,9 +82,33 @@ export async function PUT(
         : null;
     }
 
+    // Получаем текущую квартиру для инвалидации кеша
+    const currentApartment = await apartmentService.getById(id);
+    
     await apartmentService.update(id, updateData);
+    
     // Получаем обновленную квартиру в правильном формате с пересчитанными полями
     const updatedApartment = await apartmentService.getById(id);
+    
+    // Инвалидируем кеш dashboard при обновлении apartment
+    invalidateCache([
+      cacheKeys.dashboard.summary,
+      cacheKeys.dashboard.financial,
+      cacheKeys.dashboard.timeline,
+    ]);
+    
+    // Инвалидируем кеш buildings если изменился district
+    if (currentApartment && updatedApartment) {
+      const currentDistrictId = currentApartment.district_id;
+      const updatedDistrictId = updatedApartment.district_id;
+      if (currentDistrictId !== updatedDistrictId) {
+        invalidateCache([
+          cacheKeys.buildings(currentDistrictId),
+          cacheKeys.buildings(updatedDistrictId),
+        ]);
+      }
+    }
+    
     return NextResponse.json(updatedApartment);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -121,7 +146,25 @@ export async function DELETE(
       );
     }
 
+    // Получаем квартиру перед удалением для инвалидации кеша
+    const apartment = await apartmentService.getById(id);
+    
     await apartmentService.delete(id);
+    
+    // Инвалидируем кеш dashboard при удалении apartment
+    invalidateCache([
+      cacheKeys.dashboard.summary,
+      cacheKeys.dashboard.financial,
+      cacheKeys.dashboard.timeline,
+    ]);
+    
+    // Инвалидируем кеш buildings если нужно
+    if (apartment) {
+      invalidateCache([
+        cacheKeys.buildings(apartment.district_id),
+      ]);
+    }
+    
     return NextResponse.json({ message: 'Apartment deleted' }, { status: 200 });
   } catch (error) {
     console.error('[API] Error deleting apartment:', error);

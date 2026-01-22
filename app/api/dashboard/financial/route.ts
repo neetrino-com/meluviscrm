@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { dashboardService } from '@/services/dashboard.service';
+import { getCachedData, cacheKeys } from '@/lib/cache';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
@@ -10,7 +13,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const financial = await dashboardService.getFinancialSummary();
+    // Кеш на 30 секунд - очень короткий для актуальности данных
+    const financial = await getCachedData(
+      cacheKeys.dashboard.financial,
+      () => dashboardService.getFinancialSummary(),
+      30, // 30 секунд
+      ['dashboard']
+    );
+
     return NextResponse.json(financial);
   } catch (error) {
     console.error('[API] Error fetching financial summary:', error);

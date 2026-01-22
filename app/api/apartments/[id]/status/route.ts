@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { apartmentService } from '@/services/apartment.service';
 import { updateApartmentStatusSchema } from '@/lib/validations';
+import { invalidateCache, cacheKeys } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function PUT(
@@ -75,6 +76,13 @@ export async function PUT(
         { status: 404 }
       );
     }
+
+    // Инвалидируем кеш dashboard при изменении статуса (критично!)
+    invalidateCache([
+      cacheKeys.dashboard.summary,
+      cacheKeys.dashboard.financial,
+      cacheKeys.dashboard.timeline,
+    ]);
 
     return NextResponse.json({
       id: apartment.id,

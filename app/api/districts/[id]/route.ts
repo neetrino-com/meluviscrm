@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { districtService } from '@/services/district.service';
 import { updateDistrictSchema } from '@/lib/validations';
+import { invalidateCache, cacheKeys } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(
@@ -67,6 +68,10 @@ export async function PUT(
     const validatedData = updateDistrictSchema.parse(body);
 
     const district = await districtService.update(id, validatedData);
+    
+    // Инвалидируем кеш при обновлении district
+    invalidateCache([cacheKeys.districts, cacheKeys.buildings()]);
+    
     return NextResponse.json(district);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -112,6 +117,10 @@ export async function DELETE(
     }
 
     await districtService.delete(id);
+    
+    // Инвалидируем кеш при удалении district
+    invalidateCache([cacheKeys.districts, cacheKeys.buildings()]);
+    
     return NextResponse.json({ message: 'District deleted' }, { status: 200 });
   } catch (error) {
     if (error instanceof Error) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { buildingService } from '@/services/building.service';
 import { createBuildingSchema } from '@/lib/validations';
+import { getCachedData, cacheKeys, invalidateCache } from '@/lib/cache';
 import { z } from 'zod';
 
 export async function GET(request: NextRequest) {
@@ -14,10 +15,16 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const districtId = searchParams.get('districtId');
+    const parsedDistrictId = districtId ? parseInt(districtId) : undefined;
 
-    const buildings = await buildingService.getAll(
-      districtId ? parseInt(districtId) : undefined
+    // Кеш на 60 секунд - очень короткий для актуальности данных
+    const buildings = await getCachedData(
+      cacheKeys.buildings(parsedDistrictId),
+      () => buildingService.getAll(parsedDistrictId),
+      60, // 60 секунд (1 минута)
+      ['buildings', parsedDistrictId ? `buildings:district:${parsedDistrictId}` : 'buildings:all']
     );
+    
     return NextResponse.json(buildings);
   } catch (error) {
     console.error('[API] Error fetching buildings:', error);
@@ -40,6 +47,14 @@ export async function POST(request: NextRequest) {
     const validatedData = createBuildingSchema.parse(body);
 
     const building = await buildingService.create(validatedData);
+    
+    // Инвалидируем кеш при создании building
+    invalidateCache([
+      cacheKeys.buildings(),
+      cacheKeys.buildings(building.districtId),
+      cacheKeys.districts
+    ]);
+    
     return NextResponse.json(building, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

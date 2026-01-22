@@ -85,6 +85,9 @@ model Apartment {
   attachments ApartmentAttachment[]
 
   @@unique([buildingId, apartmentNo])
+  @@index([status])
+  @@index([dealDate])
+  @@index([buildingId, status])
   @@map("apartments")
 }
 
