@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         created_at: d.createdAt.toISOString(),
         updated_at: d.updatedAt.toISOString(),
       }));
-      return NextResponse.json(formatted);
+      return NextResponse.json({ data: formatted });
     }
     
     return NextResponse.json(districts);

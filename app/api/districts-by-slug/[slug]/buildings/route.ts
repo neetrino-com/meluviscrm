@@ -42,7 +42,7 @@ export async function GET(
       updated_at: building.updatedAt.toISOString(),
     }));
 
-    return NextResponse.json(buildingsWithSlug);
+    return NextResponse.json({ data: buildingsWithSlug });
   } catch (error) {
     console.error('[API] Error fetching buildings by district slug:', error);
     return NextResponse.json(
