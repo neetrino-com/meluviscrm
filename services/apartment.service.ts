@@ -156,41 +156,7 @@ export const apartmentService = {
         floorplan_distribution: apt.floorplanDistribution,
         exterior_link: apt.exteriorLink,
         exterior_link2: apt.exteriorLink2,
-        attachments: apt.attachments ? {
-          agreement_files: apt.attachments.filter((a: any) => a.fileType === 'AGREEMENT').map((a: any) => ({
-            id: a.id,
-            file_name: a.fileName,
-            file_url: a.fileUrl,
-            file_size: a.fileSize,
-            created_at: a.createdAt.toISOString(),
-          })),
-          floorplans_files: apt.attachments.filter((a: any) => a.fileType === 'FLOORPLAN').map((a: any) => ({
-            id: a.id,
-            file_name: a.fileName,
-            file_url: a.fileUrl,
-            file_size: a.fileSize,
-            created_at: a.createdAt.toISOString(),
-          })),
-          images_files: apt.attachments.filter((a: any) => a.fileType === 'IMAGE').map((a: any) => ({
-            id: a.id,
-            file_name: a.fileName,
-            file_url: a.fileUrl,
-            file_size: a.fileSize,
-            created_at: a.createdAt.toISOString(),
-          })),
-          progress_images_files: apt.attachments.filter((a: any) => a.fileType === 'PROGRESS_IMAGE').map((a: any) => ({
-            id: a.id,
-            file_name: a.fileName,
-            file_url: a.fileUrl,
-            file_size: a.fileSize,
-            created_at: a.createdAt.toISOString(),
-          })),
-        } : {
-          agreement_files: [],
-          floorplans_files: [],
-          images_files: [],
-          progress_images_files: [],
-        },
+        attachments: apt.attachments || [],
       };
     });
 
@@ -297,22 +263,6 @@ export const apartmentService = {
         ? totalPrice - Number(apartment.totalPaid)
         : totalPrice;
 
-    // Группировка attachments по типу
-    const attachments = {
-      agreement_files: apartment.attachments.filter(
-        (a) => a.fileType === 'AGREEMENT'
-      ),
-      floorplans_files: apartment.attachments.filter(
-        (a) => a.fileType === 'FLOORPLAN'
-      ),
-      images_files: apartment.attachments.filter(
-        (a) => a.fileType === 'IMAGE'
-      ),
-      progress_images_files: apartment.attachments.filter(
-        (a) => a.fileType === 'PROGRESS_IMAGE'
-      ),
-    };
-
     return {
       ...apartment,
       total_price: totalPrice,
@@ -320,7 +270,7 @@ export const apartmentService = {
       sqm: apartment.sqm ? Number(apartment.sqm) : null,
       price_sqm: apartment.priceSqm ? Number(apartment.priceSqm) : null,
       total_paid: apartment.totalPaid ? Number(apartment.totalPaid) : null,
-      attachments,
+      attachments: apartment.attachments,
       building_name: apartment.building.name,
       building_slug: apartment.building.slug,
       district_id: apartment.building.district.id,
