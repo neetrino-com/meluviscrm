@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { attachmentService } from '@/services/attachment.service';
 import { FileType } from '@prisma/client';
 import { put } from '@vercel/blob';
+import crypto from 'crypto';
 
 // Максимальный размер файла: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -14,6 +15,14 @@ const ALLOWED_DOCUMENT_TYPES = [
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
+
+// Функция для вычисления MD5 хеша файла
+async function calculateMD5(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const hash = crypto.createHash('md5').update(buffer).digest('hex');
+  return hash;
+}
 
 export async function POST(
   request: NextRequest,
@@ -79,6 +88,9 @@ export async function POST(
       );
     }
 
+    // Вычисляем MD5 хеш файла
+    const md5Hash = await calculateMD5(file);
+
     // Генерируем уникальное имя файла для Blob
     const timestamp = Date.now();
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -93,13 +105,14 @@ export async function POST(
     // Используем URL из Blob
     const fileUrl = blob.url;
 
-    // Сохраняем в БД
+    // Сохраняем в БД с MD5 хешем
     const attachment = await attachmentService.create(
       apartmentId,
       fileType as FileType,
       fileUrl,
       file.name,
-      file.size
+      file.size,
+      md5Hash
     );
 
     return NextResponse.json({
@@ -108,6 +121,7 @@ export async function POST(
       fileName: attachment.fileName,
       fileSize: attachment.fileSize,
       fileType: attachment.fileType,
+      md5Hash: attachment.md5Hash,
       createdAt: attachment.createdAt.toISOString(),
     });
   } catch (error) {

@@ -158,6 +158,17 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
         "building_slug": "tower-1",
         "district_id": 1,
         "district_slug": "kentron",
+        "attachments": [
+          {
+            "id": 1,
+            "fileType": "FLOORPLAN",
+            "fileUrl": "https://...",
+            "fileName": "floorplan.pdf",
+            "fileSize": 12345,
+            "md5Hash": "5d41402abc4b2a76b9719d911017c592",
+            "createdAt": "2026-01-15T10:00:00Z"
+          }
+        ],
         "created_at": "2026-01-19T14:27:19.476Z",
         "updated_at": "2026-01-19T14:27:19.476Z"
       }
@@ -193,6 +204,7 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/buildings/1/apartments?status=
   - `building_slug` (string) - Շենքի slug
   - `district_id` (number) - Թաղամասի ID
   - `district_slug` (string) - Թաղամասի slug
+  - `attachments` (array) - Կցված ֆայլերի զանգված (նույն ձևաչափը, ինչ endpoint 4-ում)
   - `created_at` (string, ISO 8601) - Ստեղծման ամսաթիվ
   - `updated_at` (string, ISO 8601) - Թարմացման ամսաթիվ
   - `pagination` (object) - Էջավորման տեղեկատվություն
@@ -248,12 +260,17 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/external/apartments/1" \
   "district_id": 1,
   "district_slug": "kentron",
   "district_name": "Kentron",
-  "attachments": {
-    "agreement_files": [],
-    "floorplans_files": [],
-    "images_files": [],
-    "progress_images_files": []
-  },
+  "attachments": [
+    {
+      "id": 1,
+      "fileType": "FLOORPLAN",
+      "fileUrl": "https://...",
+      "fileName": "floorplan.pdf",
+      "fileSize": 12345,
+      "md5Hash": "5d41402abc4b2a76b9719d911017c592",
+      "createdAt": "2026-01-15T10:00:00Z"
+    }
+  ],
   "created_at": "2026-01-19T14:27:19.476Z",
   "updated_at": "2026-01-19T14:27:19.476Z"
 }
@@ -274,11 +291,14 @@ curl -L -X GET "https://meluviscrm.vercel.app/api/external/apartments/1" \
 - `exterior_link2` (string, nullable) - Արտաքին հղում 2
 - `building_name` (string) - Շենքի անվանում
 - `district_name` (string) - Թաղամասի անվանում
-- `attachments` (object) - Կցված ֆայլեր
-  - `agreement_files` (array) - Պայմանագրի ֆայլեր
-  - `floorplans_files` (array) - Պլանավորման ֆայլեր
-  - `images_files` (array) - Պատկերներ
-  - `progress_images_files` (array) - Առաջընթացի լուսանկարներ
+- `attachments` (array) - Կցված ֆայլերի զանգված
+  - `id` (number) - Կցված ֆայլի ID
+  - `fileType` (string) - Ֆայլի տիպ: `AGREEMENT`, `FLOORPLAN`, `IMAGE`, `PROGRESS_IMAGE`
+  - `fileUrl` (string) - Ֆայլի URL ներբեռնման համար
+  - `fileName` (string, nullable) - Ֆայլի անվանում
+  - `fileSize` (number, nullable) - Ֆայլի չափը բայթերով
+  - `md5Hash` (string, nullable) - Ֆայլի MD5 հեշ (32 նիշ) - **օգտագործվում է ստուգելու համար, արդյոք անհրաժեշտ է ներբեռնել ֆայլը**
+  - `createdAt` (string, ISO 8601) - Ստեղծման ամսաթիվ
 
 ---
 
@@ -625,5 +645,77 @@ curl -L -X PUT "https://meluviscrm.vercel.app/api/apartments/1/status" \
 
 ---
 
-**Վերջին թարմացում:** 2026-01-20  
+---
+
+## 🔐 MD5 Հեշ ֆայլերի համար
+
+### Ինչ է MD5-ը?
+
+MD5-ը ֆայլի եզակի "հետք" է (32 նիշանոց տող): Նույն ֆայլի համար միշտ ստացվում է նույն MD5-ը:
+
+### Ինչու է դա անհրաժեշտ?
+
+MD5-ը թույլ է տալիս հաճախորդին ստուգել, արդյոք նա արդեն ունի այս ֆայլը, և ներբեռնել միայն նոր կամ փոփոխված ֆայլերը: Սա խնայում է տրաֆիկը և նվազեցնում է սերվերի բեռը:
+
+### Ինչպես օգտագործել MD5-ը?
+
+**Օգտագործման օրինակ հաճախորդի կողմից:**
+
+```typescript
+// 1. Ստանալ ֆայլերի ցուցակը MD5-ով
+const response = await fetch('/api/external/apartments/501', {
+  headers: { 'Authorization': 'Bearer TOKEN' }
+});
+const apartment = await response.json();
+
+// 2. Յուրաքանչյուր ֆայլի համար ստուգել, արդյոք այն գոյություն ունի տեղականորեն
+for (const attachment of apartment.attachments) {
+  // Հաշվարկել տեղական ֆայլի MD5-ը (եթե այն գոյություն ունի)
+  const localMD5 = await calculateLocalFileMD5(attachment.fileName);
+  
+  // Համեմատել MD5-ները
+  if (localMD5 !== attachment.md5Hash) {
+    // Ֆայլը նոր է կամ փոփոխվել է → ներբեռնել
+    await downloadFile(attachment.fileUrl, attachment.fileName);
+  } else {
+    // Ֆայլը արդեն գոյություն ունի → բաց թողնել
+    console.log(`File ${attachment.fileName} already exists, skipping...`);
+  }
+}
+```
+
+**Ինչպես հաշվարկել MD5-ը տեղականորեն:**
+
+- **Node.js:** Օգտագործեք `crypto` գրադարանը:
+  ```javascript
+  const crypto = require('crypto');
+  const fs = require('fs');
+  
+  const fileBuffer = fs.readFileSync('path/to/file');
+  const hash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+  ```
+
+- **Python:** Օգտագործեք `hashlib` գրադարանը:
+  ```python
+  import hashlib
+  
+  with open('path/to/file', 'rb') as f:
+      file_hash = hashlib.md5(f.read()).hexdigest()
+  ```
+
+- **Bash:** Օգտագործեք `md5sum` հրամանը:
+  ```bash
+  md5sum path/to/file
+  ```
+
+### Կարևոր կետեր
+
+- `md5Hash` դաշտը կարող է լինել `null` հին ֆայլերի համար (MD5-ի ներդրումից առաջ)
+- Եթե `md5Hash`-ը `null` է, հաճախորդը պետք է ներբեռնի ֆայլը ստուգման համար
+- MD5-ը ավտոմատ կերպով հաշվարկվում է նոր ֆայլերի վերբեռնման ժամանակ
+- Գոյություն ունեցող ֆայլերի համար MD5-ը հաշվարկվում է միգրացիայի սկրիպտի միջոցով
+
+---
+
+**Վերջին թարմացում:** 2026-01-26  
 **API-ի տարբերակ:** 1.0

@@ -314,12 +314,17 @@ curl -X GET https://your-domain.vercel.app/api/external/apartments/501 \
   "district_id": 1,
   "district_slug": "kentron",
   "district_name": "Kentron",
-  "attachments": {
-    "agreement_files": [],
-    "floorplans_files": [],
-    "images_files": [],
-    "progress_images_files": []
-  },
+  "attachments": [
+    {
+      "id": 1,
+      "fileType": "FLOORPLAN",
+      "fileUrl": "https://...",
+      "fileName": "floorplan.pdf",
+      "fileSize": 12345,
+      "md5Hash": "5d41402abc4b2a76b9719d911017c592",
+      "createdAt": "2026-01-15T10:00:00Z"
+    }
+  ],
   "created_at": "2026-01-15T10:00:00Z",
   "updated_at": "2026-01-15T10:00:00Z"
 }
@@ -340,11 +345,14 @@ curl -X GET https://your-domain.vercel.app/api/external/apartments/501 \
 - `exterior_link2` (string, nullable) - Внешняя ссылка 2
 - `building_name` (string) - Название здания
 - `district_name` (string) - Название района
-- `attachments` (object) - Вложения
-  - `agreement_files` (array) - Файлы договора
-  - `floorplans_files` (array) - Файлы планировок
-  - `images_files` (array) - Изображения
-  - `progress_images_files` (array) - Фото прогресса
+- `attachments` (array) - Массив вложений (файлов)
+  - `id` (number) - ID вложения
+  - `fileType` (string) - Тип файла: `AGREEMENT`, `FLOORPLAN`, `IMAGE`, `PROGRESS_IMAGE`
+  - `fileUrl` (string) - URL файла для скачивания
+  - `fileName` (string, nullable) - Имя файла
+  - `fileSize` (number, nullable) - Размер файла в байтах
+  - `md5Hash` (string, nullable) - MD5 хеш файла (32 символа) - **используется для проверки, нужно ли скачивать файл**
+  - `createdAt` (string, ISO 8601) - Дата создания
 
 **Ошибки:**
 - `401` - Не авторизован (нет или неверный токен)
@@ -517,8 +525,80 @@ curl -X PUT https://your-domain.vercel.app/api/apartments/501/status \
 
 ---
 
+---
+
+## MD5 хеши для файлов
+
+### Что такое MD5?
+
+MD5 — это уникальный "отпечаток" файла (строка из 32 символов). Для одного и того же файла всегда получается одинаковый MD5.
+
+### Зачем это нужно?
+
+MD5 позволяет клиенту проверить, есть ли у него уже этот файл, и скачать только новые или изменившиеся файлы. Это экономит трафик и снижает нагрузку на сервер.
+
+### Как использовать MD5?
+
+**Пример использования на стороне клиента:**
+
+```typescript
+// 1. Получить список файлов с MD5
+const response = await fetch('/api/external/apartments/501', {
+  headers: { 'Authorization': 'Bearer TOKEN' }
+});
+const apartment = await response.json();
+
+// 2. Для каждого файла проверить, есть ли он локально
+for (const attachment of apartment.attachments) {
+  // Вычислить MD5 локального файла (если он есть)
+  const localMD5 = await calculateLocalFileMD5(attachment.fileName);
+  
+  // Сравнить MD5
+  if (localMD5 !== attachment.md5Hash) {
+    // Файл новый или изменился → скачать
+    await downloadFile(attachment.fileUrl, attachment.fileName);
+  } else {
+    // Файл уже есть → пропустить
+    console.log(`File ${attachment.fileName} already exists, skipping...`);
+  }
+}
+```
+
+**Как вычислить MD5 локально:**
+
+- **Node.js:** Используйте библиотеку `crypto`:
+  ```javascript
+  const crypto = require('crypto');
+  const fs = require('fs');
+  
+  const fileBuffer = fs.readFileSync('path/to/file');
+  const hash = crypto.createHash('md5').update(fileBuffer).digest('hex');
+  ```
+
+- **Python:** Используйте библиотеку `hashlib`:
+  ```python
+  import hashlib
+  
+  with open('path/to/file', 'rb') as f:
+      file_hash = hashlib.md5(f.read()).hexdigest()
+  ```
+
+- **Bash:** Используйте команду `md5sum`:
+  ```bash
+  md5sum path/to/file
+  ```
+
+### Важные моменты
+
+- Поле `md5Hash` может быть `null` для старых файлов (до внедрения MD5)
+- Если `md5Hash` равен `null`, клиент должен скачать файл для проверки
+- MD5 вычисляется автоматически при загрузке новых файлов
+- Для существующих файлов MD5 вычисляется через скрипт миграции
+
+---
+
 ## Поддержка
 
 Для вопросов по API обращайтесь к администратору системы.
 
-**Последнее обновление:** 2026-01-19
+**Последнее обновление:** 2026-01-26

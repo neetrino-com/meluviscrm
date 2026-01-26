@@ -65,12 +65,14 @@ export async function GET(
       total_price: apt.total_price,
       total_paid: apt.total_paid,
       balance: apt.balance,
-      deal_date: apt.deal_date,
+      deal_date: apt.deal_date
+        ? new Date(apt.deal_date).toISOString().split('T')[0]
+        : null,
       ownership_name: apt.ownership_name,
       email: apt.email,
       passport_tax_no: apt.passport_tax_no,
       phone: apt.phone,
-      sales_type: apt.sales_type ? apt.sales_type.toLowerCase() : null,
+      sales_type: apt.sales_type ? apt.sales_type.toLowerCase() : 'unsold',
       deal_description: apt.deal_description,
       matter_link: apt.matter_link,
       floorplan_distribution: apt.floorplan_distribution,
@@ -82,7 +84,15 @@ export async function GET(
       district_id: apt.building.district.id,
       district_slug: apt.building.district.slug,
       district_name: apt.building.district.name,
-      attachments: apt.attachments,
+      attachments: apt.attachments.map((att) => ({
+        id: att.id,
+        fileType: att.fileType,
+        fileUrl: att.fileUrl,
+        fileName: att.fileName,
+        fileSize: att.fileSize,
+        md5Hash: att.md5Hash,
+        createdAt: att.createdAt.toISOString(),
+      })),
       created_at: apt.createdAt.toISOString(),
       updated_at: apt.updatedAt.toISOString(),
     }));

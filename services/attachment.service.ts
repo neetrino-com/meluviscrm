@@ -7,7 +7,8 @@ export const attachmentService = {
     fileType: FileType,
     fileUrl: string,
     fileName?: string,
-    fileSize?: number
+    fileSize?: number,
+    md5Hash?: string
   ) {
     return await prisma.apartmentAttachment.create({
       data: {
@@ -16,6 +17,7 @@ export const attachmentService = {
         fileUrl,
         fileName,
         fileSize,
+        md5Hash,
       },
     });
   },

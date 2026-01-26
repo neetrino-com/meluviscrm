@@ -113,10 +113,12 @@ model ApartmentAttachment {
   fileUrl     String   @map("file_url") @db.Text
   fileName    String?  @map("file_name")
   fileSize    Int?     @map("file_size")
+  md5Hash     String?  @map("md5_hash")
   createdAt   DateTime @default(now()) @map("created_at")
 
   apartment Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
 
+  @@index([md5Hash])
   @@map("apartment_attachments")
 }
 
