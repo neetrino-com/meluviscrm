@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { attachmentService } from '@/services/attachment.service';
 import { FileType } from '@prisma/client';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { put } from '@vercel/blob';
 
 // Максимальный размер файла: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -81,25 +79,19 @@ export async function POST(
       );
     }
 
-    // Создаём директорию для файлов
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'apartments', String(apartmentId));
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
-    // Генерируем уникальное имя файла
+    // Генерируем уникальное имя файла для Blob
     const timestamp = Date.now();
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const fileName = `${timestamp}_${sanitizedFileName}`;
-    const filePath = join(uploadsDir, fileName);
+    const blobFileName = `apartments/${apartmentId}/${fileType.toLowerCase()}/${timestamp}_${sanitizedFileName}`;
 
-    // Сохраняем файл
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    // Загружаем файл в Vercel Blob
+    const blob = await put(blobFileName, file, {
+      access: 'public',
+      contentType: file.type,
+    });
 
-    // Создаём URL для доступа к файлу
-    const fileUrl = `/uploads/apartments/${apartmentId}/${fileName}`;
+    // Используем URL из Blob
+    const fileUrl = blob.url;
 
     // Сохраняем в БД
     const attachment = await attachmentService.create(

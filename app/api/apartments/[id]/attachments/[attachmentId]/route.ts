@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { attachmentService } from '@/services/attachment.service';
-import { unlink } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { del } from '@vercel/blob';
 
 export async function DELETE(
   request: NextRequest,
@@ -37,17 +35,18 @@ export async function DELETE(
       );
     }
 
-    // Удаляем файл с диска
-    if (attachment.fileUrl.startsWith('/uploads/')) {
-      const filePath = join(process.cwd(), 'public', attachment.fileUrl);
-      if (existsSync(filePath)) {
-        try {
-          await unlink(filePath);
-        } catch (error) {
-          console.error('[API] Error deleting file:', error);
-          // Продолжаем удаление записи из БД даже если файл не найден
-        }
+    // Удаляем файл из Vercel Blob
+    // Проверяем, что это URL из Blob (начинается с https://)
+    if (attachment.fileUrl.startsWith('https://')) {
+      try {
+        await del(attachment.fileUrl);
+      } catch (error) {
+        console.error('[API] Error deleting blob:', error);
+        // Продолжаем удаление записи из БД даже если файл не найден в Blob
       }
+    } else {
+      // Для старых файлов, сохранённых локально (миграция)
+      console.warn('[API] Old local file detected, skipping blob deletion:', attachment.fileUrl);
     }
 
     // Удаляем запись из БД
